@@ -1,7 +1,7 @@
 #!perl -w
 
 use strict;
-no strict "vars";
+use vars qw($limit $set $start $stop $min $max $norm $i $j);
 
 use Set::IntegerFast;
 
@@ -74,9 +74,9 @@ exit;
 
 sub print_elapsed_time
 {
-    ($sec,$min,$hour,$year,$yday) = (gmtime($stop - $start))[0,1,2,5,7];
+    my($flag) = 0;
+    my($sec,$min,$hour,$year,$yday) = (gmtime($stop - $start))[0,1,2,5,7];
     $year -= 70;
-    $flag = 0;
     print "Elapsed time: ";
     if ($year > 0)
     {

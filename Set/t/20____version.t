@@ -3,20 +3,16 @@
 use strict;
 no strict "vars";
 
-use Set::IntegerFast;
+use Math::MatrixBool;
 
 # ======================================================================
-#   $ver = Set::IntegerFast::Version();
-#   $Set::IntegerFast::VERSION
+#   $Math::MatrixBool::VERSION
 # ======================================================================
 
-print "1..2\n";
+print "1..1\n";
 
 $n = 1;
-if (Set::IntegerFast::Version() eq "2.0")
-{print "ok $n\n";} else {print "not ok $n\n";}
-$n++;
-if ($Set::IntegerFast::VERSION eq "2.0")
+if ($Math::MatrixBool::VERSION eq "1.0")
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 

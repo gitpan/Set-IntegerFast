@@ -19,46 +19,43 @@
 /*
 (*      automatic self-configuring routine: *)
 
-unit    Set_Auto_config(void);              (* 0 = ok, 1..5 = error *)
-
-(*      low-level routines: *)
-
-void    Bit0(unitptr addr, unit index, unit bitno);         (* clear bit  *)
-void    Bit1(unitptr addr, unit index, unit bitno);         (* set bit    *)
-void    BitX(unitptr addr, unit index, unit bitno);         (* flip bit   *)
-boolean Bit (unitptr addr, unit index, unit bitno);         (* return bit *)
+unit    Set_Auto_config(void);                       (* 0 = ok, 1..5 = error *)
 
 (*      auxiliary routines: *)
 
-unit    Set_Size(N_int elements);           (* calc set size (# of units)  *)
-unit    Set_Mask(N_int elements);           (* calc set mask (unused bits) *)
+unit    Set_Size(N_int elements);             (* calc set size (# of units)  *)
+unit    Set_Mask(N_int elements);             (* calc set mask (unused bits) *)
 
 (*      object creation/destruction/initialization routines: *)
 
-unitptr Set_Create (N_int elements);                        (* malloc  *)
-void    Set_Destroy(unitptr addr);                          (* free    *)
-unitptr Set_Resize (unitptr oldaddr, N_int elements);       (* realloc *)
-void    Set_Empty  (unitptr addr);                          (* X = {}  *)
-void    Set_Fill   (unitptr addr);                          (* X = ~{} *)
+unitptr Set_Create (N_int   elements);                      (* malloc        *)
+void    Set_Destroy(unitptr addr);                          (* free          *)
+unitptr Set_Resize (unitptr oldaddr, N_int elements);       (* realloc       *)
+void    Set_Empty  (unitptr addr);                          (* X = {}        *)
+void    Set_Fill   (unitptr addr);                          (* X = ~{}       *)
 
 (*      set operations on elements: *)
 
-void    Set_Insert(unitptr addr, N_int index);              (* X = X + {x} *)
-void    Set_Delete(unitptr addr, N_int index);              (* X = X \ {x} *)
+void    Set_Insert (unitptr addr, N_int index);             (* X = X + {x}   *)
+void    Set_Delete (unitptr addr, N_int index);             (* X = X \ {x}   *)
+
+(*      hybrid set operation and test function on element: *)
+
+boolean Set_flip   (unitptr addr, N_int index);         (* X=(X+{x})\(X*{x}) *)
 
 (*      set test functions on elements: *)
 
-boolean Set_in    (unitptr addr, N_int index);              (* {x} in X ?   *)
+boolean Set_in     (unitptr addr, N_int index);             (* {x} in X ?    *)
 
-void    Set_in_Init (N_int index, unit *pos, unit *mask);   (* init. loop   *)
-boolean Set_in_up  (unitptr addr, unit *pos, unit *mask);   (* {x++} in X ? *)
-boolean Set_in_down(unitptr addr, unit *pos, unit *mask);   (* {x--} in X ? *)
+void    Set_in_Init (N_int index, unit *pos, unit *mask);   (* init. loop    *)
+boolean Set_in_up  (unitptr addr, unit *pos, unit *mask);   (* {x++} in X ?  *)
+boolean Set_in_down(unitptr addr, unit *pos, unit *mask);   (* {x--} in X ?  *)
 
 (*      set functions: *)
 
-N_int   Set_Norm(unitptr addr);                             (* = | X | *)
-Z_long  Set_Min (unitptr addr);                             (* = min X *)
-Z_long  Set_Max (unitptr addr);                             (* = max X *)
+N_int   Set_Norm   (unitptr addr);                          (* = | X |       *)
+Z_long  Set_Min    (unitptr addr);                          (* = min(X)      *)
+Z_long  Set_Max    (unitptr addr);                          (* = max(X)      *)
 
 (*      set operations on whole sets: *)
 
@@ -70,14 +67,14 @@ void    Set_Complement  (unitptr X, unitptr Y);             (* X = ~Y        *)
 
 (*      set test functions on whole sets: *)
 
-boolean Set_equal    (unitptr X, unitptr Y);                (* X == Y ?    *)
-boolean Set_inclusion(unitptr X, unitptr Y);                (* X in Y ?    *)
-boolean Set_lexorder (unitptr X, unitptr Y);                (* X <= Y ?    *)
-Z_int   Set_Compare  (unitptr X, unitptr Y);                (* X <,=,> Y ? *)
+boolean Set_equal       (unitptr X, unitptr Y);             (* X == Y ?      *)
+boolean Set_inclusion   (unitptr X, unitptr Y);             (* X in Y ?      *)
+boolean Set_lexorder    (unitptr X, unitptr Y);             (* X <= Y ?      *)
+Z_int   Set_Compare     (unitptr X, unitptr Y);             (* X <,=,> Y ?   *)
 
 (*      set copy: *)
 
-void    Set_Copy(unitptr X, unitptr Y);                     (* X = Y *)
+void    Set_Copy        (unitptr X, unitptr Y);             (* X = Y         *)
 */
 /*
 // The "mask" that is used in various functions throughout this package avoids
@@ -177,13 +174,13 @@ void    Set_Copy(unitptr X, unitptr Y);                     (* X = Y *)
     /* machine dependent constants (will be determined by Set_Auto_config): */
     /************************************************************************/
 
-static unit BITS;       /* = # of bits of a machine word (must be power of 2) */
-static unit MODMASK;    /* = BITS - 1 (mask for calculating modulo BITS) */
-static unit LOGBITS;    /* = ld(BITS) (logarithmus dualis) */
-static unit FACTOR;     /* = ld(BITS / 8) (ld of # of bytes) */
+static unit BITS;       /* = # of bits in machine word (must be power of 2)  */
+static unit MODMASK;    /* = BITS - 1 (mask for calculating modulo BITS)     */
+static unit LOGBITS;    /* = ld(BITS) (logarithmus dualis)                   */
+static unit FACTOR;     /* = ld(BITS / 8) (ld of # of bytes)                 */
 
-#define     LSB   1     /* mask for least significant bit */
-static unit MSB;        /* mask for most significant bit */
+#define     LSB   1     /* mask for least significant bit                    */
+static unit MSB;        /* mask for most significant bit                     */
 
     /***********************************************************************/
     /* bit mask table for fast access (will be set up by Set_Auto_config): */
@@ -223,14 +220,14 @@ unit Set_Auto_config(void)
         lsb = (sample AND LSB);
     }
 
-    if (sample) return(2);          /* # of bits is not a power of 2! */
+    if (sample) return(2);                 /* # of bits is not a power of 2! */
 
-    if (LOGBITS < 3) return(3);     /* # of bits too small - minimum is 8! */
+    if (LOGBITS < 3) return(3);       /* # of bits too small - minimum is 8! */
 
-    if (BITS != (sizeof(unit) << 3)) return(4);  /* BITS != sizeof(unit)*8 */
+    if (BITS != (sizeof(unit) << 3)) return(4);    /* BITS != sizeof(unit)*8 */
 
     MODMASK = BITS - 1;
-    FACTOR = LOGBITS - 3; /* ld(BITS / 8) = ld(BITS) - ld(8) = ld(BITS) - 3 */
+    FACTOR = LOGBITS - 3;  /* ld(BITS / 8) = ld(BITS) - ld(8) = ld(BITS) - 3 */
     MSB = (LSB << MODMASK);
 
     BITMASKTAB = (unitptr) malloc(BITS << FACTOR);
@@ -245,34 +242,10 @@ unit Set_Auto_config(void)
 }
 
     /***********************/
-    /* low-level routines: */
-    /***********************/
-
-void Bit0(unitptr addr, unit index, unit bitno)             /* clear bit */
-{
-    *(addr+index) &= NOT BITMASKTAB[bitno AND MODMASK];
-}
-
-void Bit1(unitptr addr, unit index, unit bitno)             /* set bit */
-{
-    *(addr+index) |= BITMASKTAB[bitno AND MODMASK];
-}
-
-void BitX(unitptr addr, unit index, unit bitno)             /* flip bit */
-{
-    *(addr+index) ^= BITMASKTAB[bitno AND MODMASK];
-}
-
-boolean Bit(unitptr addr, unit index, unit bitno)           /* return bit */
-{
-    return( (*(addr+index) AND BITMASKTAB[bitno AND MODMASK]) != 0 );
-}
-
-    /***********************/
     /* auxiliary routines: */
     /***********************/
 
-unit Set_Size(N_int elements)               /* calc set size (# of units) */
+unit Set_Size(N_int elements)                 /* calc set size (# of units)  */
 {
     unit size;
 
@@ -281,7 +254,7 @@ unit Set_Size(N_int elements)               /* calc set size (# of units) */
     return(size);
 }
 
-unit Set_Mask(N_int elements)               /* calc set mask (unused bits) */
+unit Set_Mask(N_int elements)                 /* calc set mask (unused bits) */
 {
     unit mask;
 
@@ -294,7 +267,7 @@ unit Set_Mask(N_int elements)               /* calc set mask (unused bits) */
     /* object creation/destruction/initialization routines: */
     /********************************************************/
 
-void Set_Empty(unitptr addr)                            /* X = {}   clr all */
+void Set_Empty(unitptr addr)                              /* X = {}  clr all */
 {
     unit size;
 
@@ -302,7 +275,7 @@ void Set_Empty(unitptr addr)                            /* X = {}   clr all */
     while (size-- > 0) *addr++ = 0;
 }
 
-void Set_Fill(unitptr addr)                             /* X = ~{}  set all */
+void Set_Fill(unitptr addr)                               /* X = ~{} set all */
 {
     unit size;
     unit mask;
@@ -318,7 +291,7 @@ void Set_Fill(unitptr addr)                             /* X = ~{}  set all */
     }
 }
 
-unitptr Set_Create(N_int elements)                      /* malloc */
+unitptr Set_Create(N_int elements)                          /* malloc        */
 {
     unit    size;
     unit    mask;
@@ -345,7 +318,7 @@ unitptr Set_Create(N_int elements)                      /* malloc */
     return(addr);
 }
 
-void Set_Destroy(unitptr addr)                          /* free */
+void Set_Destroy(unitptr addr)                              /* free          */
 {
     if (addr != NULL)
     {
@@ -354,7 +327,7 @@ void Set_Destroy(unitptr addr)                          /* free */
     }
 }
 
-unitptr Set_Resize(unitptr oldaddr, N_int elements)     /* realloc */
+unitptr Set_Resize(unitptr oldaddr, N_int elements)         /* realloc       */
 {
     unit bytes;
     unit oldsize;
@@ -417,21 +390,34 @@ unitptr Set_Resize(unitptr oldaddr, N_int elements)     /* realloc */
     /* set operations on elements: */
     /*******************************/
 
-void Set_Insert(unitptr addr, N_int index)                  /* X = X + {x} */
+void Set_Insert(unitptr addr, N_int index)                  /* X = X + {x}   */
 {
     *(addr+(index>>LOGBITS)) |= BITMASKTAB[index AND MODMASK];
 }
 
-void Set_Delete(unitptr addr, N_int index)                  /* X = X \ {x} */
+void Set_Delete(unitptr addr, N_int index)                  /* X = X \ {x}   */
 {
     *(addr+(index>>LOGBITS)) &= NOT BITMASKTAB[index AND MODMASK];
+}
+
+    /******************************************************/
+    /* hybrid set operation and test function on element: */
+    /******************************************************/
+
+boolean Set_flip(unitptr addr, N_int index)             /* X=(X+{x})\(X*{x}) */
+{
+    unit mask;
+
+    return( (
+        ( *(addr+(index>>LOGBITS)) ^= (mask = BITMASKTAB[index AND MODMASK]) )
+        AND mask ) != 0 );
 }
 
     /***********************************/
     /* set test functions on elements: */
     /***********************************/
 
-boolean Set_in(unitptr addr, N_int index)                   /* {x} in X ? */
+boolean Set_in(unitptr addr, N_int index)                   /* {x} in X ?    */
 {
     return( (*(addr+(index>>LOGBITS)) AND BITMASKTAB[index AND MODMASK]) != 0 );
 }
@@ -442,7 +428,7 @@ void Set_in_Init(N_int index, unit *pos, unit *mask)    /* prepare test loop */
     (*mask) = BITMASKTAB[index AND MODMASK];
 }
 
-boolean Set_in_up(unitptr addr, unit *pos, unit *mask)      /* {x++} in X ? */
+boolean Set_in_up(unitptr addr, unit *pos, unit *mask)      /* {x++} in X ?  */
 {
     boolean r;
 
@@ -456,7 +442,7 @@ boolean Set_in_up(unitptr addr, unit *pos, unit *mask)      /* {x++} in X ? */
     return(r);
 }
 
-boolean Set_in_down(unitptr addr, unit *pos, unit *mask)    /* {x--} in X ? */
+boolean Set_in_down(unitptr addr, unit *pos, unit *mask)    /* {x--} in X ?  */
 {
     boolean r;
 
@@ -474,7 +460,7 @@ boolean Set_in_down(unitptr addr, unit *pos, unit *mask)    /* {x--} in X ? */
     /* set functions: */
     /******************/
 
-N_int Set_Norm(unitptr addr)                                /* = | X | */
+N_int Set_Norm(unitptr addr)                                /* = | X |       */
 {
     unit c;
     unit size;
@@ -493,7 +479,7 @@ N_int Set_Norm(unitptr addr)                                /* = | X | */
     return(count);
 }
 
-Z_long Set_Min(unitptr addr)                                /* = min X */
+Z_long Set_Min(unitptr addr)                                /* = min(X)      */
 {
     unit c;
     unit i;
@@ -506,7 +492,7 @@ Z_long Set_Min(unitptr addr)                                /* = min X */
     {
         if (c = *addr++) empty = false; else ++i;
     }
-    if (empty) return((Z_long) LONG_MAX);                   /* plus infinity */
+    if (empty) return((Z_long) LONG_MAX);                  /* plus infinity  */
     i <<= LOGBITS;
     while (not (c AND LSB))
     {
@@ -516,7 +502,7 @@ Z_long Set_Min(unitptr addr)                                /* = min X */
     return((Z_long) i);
 }
 
-Z_long Set_Max(unitptr addr)                                /* = max X */
+Z_long Set_Max(unitptr addr)                                /* = max(X)      */
 {
     unit c;
     unit i;
@@ -530,7 +516,7 @@ Z_long Set_Max(unitptr addr)                                /* = max X */
     {
         if (c = *addr--) empty = false; else --i;
     }
-    if (empty) return((Z_long) LONG_MIN);                   /* minus infinity */
+    if (empty) return((Z_long) LONG_MIN);                  /* minus infinity */
     i <<= LOGBITS;
     while (not (c AND MSB))
     {
@@ -544,7 +530,7 @@ Z_long Set_Max(unitptr addr)                                /* = max X */
     /* set operations on whole sets: */
     /*********************************/
 
-void Set_Union(unitptr X, unitptr Y, unitptr Z)             /* X = Y + Z */
+void Set_Union(unitptr X, unitptr Y, unitptr Z)             /* X = Y + Z     */
 {
     unit size;
     unit mask;
@@ -558,7 +544,7 @@ void Set_Union(unitptr X, unitptr Y, unitptr Z)             /* X = Y + Z */
     }
 }
 
-void Set_Intersection(unitptr X, unitptr Y, unitptr Z)      /* X = Y * Z */
+void Set_Intersection(unitptr X, unitptr Y, unitptr Z)      /* X = Y * Z     */
 {
     unit size;
     unit mask;
@@ -572,7 +558,7 @@ void Set_Intersection(unitptr X, unitptr Y, unitptr Z)      /* X = Y * Z */
     }
 }
 
-void Set_Difference(unitptr X, unitptr Y, unitptr Z)        /* X = Y \ Z */
+void Set_Difference(unitptr X, unitptr Y, unitptr Z)        /* X = Y \ Z     */
 {
     unit size;
     unit mask;
@@ -600,7 +586,7 @@ void Set_ExclusiveOr(unitptr X, unitptr Y, unitptr Z)       /* X=(Y+Z)\(Y*Z) */
     }
 }
 
-void Set_Complement(unitptr X, unitptr Y)                   /* X = ~Y */
+void Set_Complement(unitptr X, unitptr Y)                   /* X = ~Y        */
 {
     unit size;
     unit mask;
@@ -618,7 +604,7 @@ void Set_Complement(unitptr X, unitptr Y)                   /* X = ~Y */
     /* set test functions on whole sets: */
     /*************************************/
 
-boolean Set_equal(unitptr X, unitptr Y)                     /* X == Y ? */
+boolean Set_equal(unitptr X, unitptr Y)                     /* X == Y ?      */
 {
     unit size;
     boolean r = true;
@@ -628,7 +614,7 @@ boolean Set_equal(unitptr X, unitptr Y)                     /* X == Y ? */
     return(r);
 }
 
-boolean Set_inclusion(unitptr X, unitptr Y)                 /* X in Y ? */
+boolean Set_inclusion(unitptr X, unitptr Y)                 /* X in Y ?      */
 {
     unit size;
     boolean r = true;
@@ -638,7 +624,7 @@ boolean Set_inclusion(unitptr X, unitptr Y)                 /* X in Y ? */
     return(r);
 }
 
-boolean Set_lexorder(unitptr X, unitptr Y)                  /* X <= Y ? */
+boolean Set_lexorder(unitptr X, unitptr Y)                  /* X <= Y ?      */
 {
     unit size;
     boolean r = true;
@@ -650,7 +636,7 @@ boolean Set_lexorder(unitptr X, unitptr Y)                  /* X <= Y ? */
     return(*X <= *Y);
 }
 
-Z_int Set_Compare(unitptr X, unitptr Y)                     /* X <,=,> Y ? */
+Z_int Set_Compare(unitptr X, unitptr Y)                     /* X <,=,> Y ?   */
 {
     unit size;
     boolean r = true;
@@ -670,7 +656,7 @@ Z_int Set_Compare(unitptr X, unitptr Y)                     /* X <,=,> Y ? */
     /* set copy: */
     /*************/
 
-void Set_Copy(unitptr X, unitptr Y)                         /* X = Y */
+void Set_Copy(unitptr X, unitptr Y)                         /* X = Y         */
 {
     unit size;
     unit mask;
@@ -688,7 +674,7 @@ void Set_Copy(unitptr X, unitptr Y)                         /* X = Y */
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     30.11.96              */
+/* MODIFIED     19.12.96              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/

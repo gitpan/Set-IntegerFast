@@ -13,48 +13,49 @@
 /* INTERFACE                          */
 /**************************************/
 
+/*      define ENABLE_BOUNDS_CHECKING here to do bounds checking! */
+
+#define ENABLE_BOUNDS_CHECKING
+
 /*      automatic self-configuring routine: */
 
-unit    Set_Auto_config(void);              /* 0 = ok, 1..5 = error */
-
-/*      low-level routines: */
-
-void    Bit0(unitptr addr, unit index, unit bitno);         /* clear bit  */
-void    Bit1(unitptr addr, unit index, unit bitno);         /* set bit    */
-void    BitX(unitptr addr, unit index, unit bitno);         /* flip bit   */
-boolean Bit (unitptr addr, unit index, unit bitno);         /* return bit */
+unit    Set_Auto_config(void);                       /* 0 = ok, 1..5 = error */
 
 /*      auxiliary routines: */
 
-unit    Set_Size(N_int elements);           /* calc set size (# of units)  */
-unit    Set_Mask(N_int elements);           /* calc set mask (unused bits) */
+unit    Set_Size(N_int elements);             /* calc set size (# of units)  */
+unit    Set_Mask(N_int elements);             /* calc set mask (unused bits) */
 
 /*      object creation/destruction/initialization routines: */
 
-unitptr Set_Create (N_int elements);                        /* malloc  */
-void    Set_Destroy(unitptr addr);                          /* free    */
-unitptr Set_Resize (unitptr oldaddr, N_int elements);       /* realloc */
-void    Set_Empty  (unitptr addr);                          /* X = {}  */
-void    Set_Fill   (unitptr addr);                          /* X = ~{} */
+unitptr Set_Create (N_int   elements);                      /* malloc        */
+void    Set_Destroy(unitptr addr);                          /* free          */
+unitptr Set_Resize (unitptr oldaddr, N_int elements);       /* realloc       */
+void    Set_Empty  (unitptr addr);                          /* X = {}        */
+void    Set_Fill   (unitptr addr);                          /* X = ~{}       */
 
 /*      set operations on elements: */
 
-void    Set_Insert(unitptr addr, N_int index);              /* X = X + {x} */
-void    Set_Delete(unitptr addr, N_int index);              /* X = X \ {x} */
+void    Set_Insert (unitptr addr, N_int index);             /* X = X + {x}   */
+void    Set_Delete (unitptr addr, N_int index);             /* X = X \ {x}   */
+
+/*      hybrid set operation and test function on element: */
+
+boolean Set_flip   (unitptr addr, N_int index);         /* X=(X+{x})\(X*{x}) */
 
 /*      set test functions on elements: */
 
-boolean Set_in    (unitptr addr, N_int index);              /* {x} in X ?   */
+boolean Set_in     (unitptr addr, N_int index);             /* {x} in X ?    */
 
-void    Set_in_Init (N_int index, unit *pos, unit *mask);   /* init. loop   */
-boolean Set_in_up  (unitptr addr, unit *pos, unit *mask);   /* {x++} in X ? */
-boolean Set_in_down(unitptr addr, unit *pos, unit *mask);   /* {x--} in X ? */
+void    Set_in_Init (N_int index, unit *pos, unit *mask);   /* init. loop    */
+boolean Set_in_up  (unitptr addr, unit *pos, unit *mask);   /* {x++} in X ?  */
+boolean Set_in_down(unitptr addr, unit *pos, unit *mask);   /* {x--} in X ?  */
 
 /*      set functions: */
 
-N_int   Set_Norm(unitptr addr);                             /* = | X | */
-Z_long  Set_Min (unitptr addr);                             /* = min X */
-Z_long  Set_Max (unitptr addr);                             /* = max X */
+N_int   Set_Norm   (unitptr addr);                          /* = | X |       */
+Z_long  Set_Min    (unitptr addr);                          /* = min(X)      */
+Z_long  Set_Max    (unitptr addr);                          /* = max(X)      */
 
 /*      set operations on whole sets: */
 
@@ -66,14 +67,14 @@ void    Set_Complement  (unitptr X, unitptr Y);             /* X = ~Y        */
 
 /*      set test functions on whole sets: */
 
-boolean Set_equal    (unitptr X, unitptr Y);                /* X == Y ?    */
-boolean Set_inclusion(unitptr X, unitptr Y);                /* X in Y ?    */
-boolean Set_lexorder (unitptr X, unitptr Y);                /* X <= Y ?    */
-Z_int   Set_Compare  (unitptr X, unitptr Y);                /* X <,=,> Y ? */
+boolean Set_equal       (unitptr X, unitptr Y);             /* X == Y ?      */
+boolean Set_inclusion   (unitptr X, unitptr Y);             /* X in Y ?      */
+boolean Set_lexorder    (unitptr X, unitptr Y);             /* X <= Y ?      */
+Z_int   Set_Compare     (unitptr X, unitptr Y);             /* X <,=,> Y ?   */
 
 /*      set copy: */
 
-void    Set_Copy(unitptr X, unitptr Y);                     /* X = Y */
+void    Set_Copy        (unitptr X, unitptr Y);             /* X = Y         */
 
 /*
 // The "mask" that is used in various functions throughout this package avoids
@@ -168,7 +169,7 @@ void    Set_Copy(unitptr X, unitptr Y);                     /* X = Y */
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     30.11.96              */
+/* MODIFIED     19.12.96              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/

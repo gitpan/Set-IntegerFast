@@ -1,9 +1,12 @@
 
-#  Copyright (c) 1996 Steffen Beyer. All rights reserved.
-#  This package is free software; you can redistribute it and/or
-#  modify it under the same terms as Perl itself.
+#  Copyright (c) 1995, 1996, 1997 by Steffen Beyer. All rights reserved.
+#  This package is free software; you can redistribute it and/or modify
+#  it under the same terms as Perl itself.
 
 package Set::IntegerFast;
+
+use strict;
+use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION);
 
 require Exporter;
 require DynaLoader;
@@ -14,7 +17,7 @@ require DynaLoader;
 
 @EXPORT_OK = qw();
 
-$VERSION = '2.0';
+$VERSION = '2.1';
 
 bootstrap Set::IntegerFast $VERSION;
 
@@ -66,6 +69,12 @@ C<$class = 'Set::IntegerFast'; $set = Set::IntegerFast::new($class,$elements);>
 C<$set = new Set::IntegerFast($elements);>
 
 (alternate way of calling the set object constructor)
+
+=item *
+
+C<$set = new Set::IntegerFast $elements;>
+
+(same as before, but without the parentheses)
 
 (recommended)
 
@@ -133,6 +142,12 @@ inserts a given element
 C<$set-E<gt>Delete($index);>
 
 deletes a given element
+
+=item *
+
+C<$set-E<gt>flip($index);>
+
+flips a given element and returns its new value
 
 =item *
 
@@ -239,11 +254,11 @@ B<Hint: method names all in lower case indicate a boolean return value!>
 
 =head1 DESCRIPTION
 
-This package allows you to create sets of arbitrary size (only limited
-by the size of a machine word (minimum) and available memory on your
-system (maximum)) of an interval of positive integers starting with zero,
-to dynamically change the size of such a set and to perform all the basic
-operations for sets on them, like
+This module allows you to create sets of arbitrary size (only limited
+by the size of a machine word and available memory on your system) of an
+interval of positive integers starting with zero, to dynamically change
+the size of such sets and to perform all the basic operations for sets
+on them, like
 
 =over 4
 
@@ -275,40 +290,45 @@ computing the minimum, the maximum and the norm (number of elements) of a set.
 =back
 
 Note that it is extremely easy to implement sets of arbitrary intervals
-of integers using this package (negative indices are no obstacle),
+of integers using this module (negative indices are no obstacle),
 despite the fact that only intervals of positive integers (from
 zero to some positive integer) are supported directly.
 
-Please refer to L<"ARBITRARY SETS"> below to see how this is done!
+Please refer to L<"ARBITRARY SETS"> below to see how this can be done!
 
-The package is mainly intended for mathematical or algorithmical computations.
+The module is mainly intended for mathematical or algorithmical computations.
 There are also a number of efficient algorithms that rely on sets.
 
 An example of such an efficient algorithm (which uses a different
-representation for sets than this package, however) is Kruskal's
+representation for sets than this module, however) is Kruskal's
 algorithm for minimal spanning trees in graphs. (That algorithm is
-included in this distribution as a Perl program (thoroughly commented)
-for those interested)
+included in this distribution as a Perl module for those interested.
+Please refer to L<Graph::Kruskal(3)> for more details!)
 
 Another famous algorithm using sets is the "Seave of Erathostenes" for
-calculating prime numbers, which is included here as a demo program.
+calculating prime numbers, which is included here as a demo program
+(see "primes.pl").
 
 An important field of application is the computation of "first", "follow"
 and "look-ahead" character sets for the construction of LL, SLR, LR and LALR
 parsers for compilers (or a compiler-compiler, like "yacc", for instance).
 
-(That's what the C code in this package was initially written for)
+(That's what the C library in this package was initially written for)
 
 (See Aho, Hopcroft, Ullman, "The Design and Analysis of Computer Algorithms"
 for an excellent book on efficient algorithms and the famous "Dragon Book" on
 how to build compilers by Aho, Sethi, Ullman)
 
-Therefore, this package is designed for efficiency and not for a fancy
-user interface.
+Therefore, this module is primarily designed for efficiency and not for a
+comfortable user interface (the latter can be added by additional modules,
+as shown by the "Set::IntegerRange" and "Math::MatrixBool" modules).
 
 It only offers a basic functionality and leaves it up to your application
 to add whatever special handling it needs (for example, negative indices
 can be realized by biasing the whole range with an offset).
+
+(Please refer to L<"ARBITRARY SETS"> below and the "Set::IntegerRange"
+module in this package to see how!)
 
 Sets in this package are implemented as bit vectors, and elements are positive
 integers from zero to the maximum number of elements (which you specify when
@@ -318,25 +338,25 @@ Each element (i.e., number or "index") thus corresponds to one bit in the
 bit array. Bit number 0 of word number 0 corresponds to element number 0,
 element number 1 corresponds to bit number 1 of word number 0, and so on.
 
-The package doesn't use bytes as basic storage unit, it rather uses machine
+The module doesn't use bytes as basic storage unit, it rather uses machine
 words, assuming that a machine word is the most efficiently handled size of
 all scalar types on any machine (that's what the C standard proposes and
-assumes).
+assumes anyway).
 
 In order to achieve this, it automatically determines the number of bits
 in a machine word on your system and then adjusts its internal constants
 accordingly.
 
 The greater the size of this basic storage unit, the better the complexity
-of the routines in this package (but also the greater the average waste of
+of the methods in this module (but also the greater the average waste of
 unused bits in the last word).
 
-See L<"COMPLEXITY"> in this man page for a detailed analysis of
-the complexity of each method!
+See L<"COMPLEXITY"> in this man page for an overview of the complexity of
+each method!
 
-Note that the C part of this package (F<lib_set.c>) is designed in such a
-way that it may be used independently from Perl and this Perl extension
-module as a C library.
+Note that the C library in this package (F<lib_set.c>) is designed in such
+a way that it may be used independently from Perl and this Perl extension
+module. (!)
 
 For this, you can use the file F<lib_set.o> exactly as it is produced when
 building this module! It contains no references to Perl, and it doesn't need
@@ -349,13 +369,13 @@ whatsoever! (This is left to your application!)
 (See the corresponding explanation in the file F<lib_set.c> for more details
 and the file F<IntegerFast.xs> for an example of how this can be done!)
 
-In this package, all bounds and type checking (which should be absolutely
+In this module, all bounds and type checking (which should be absolutely
 fool-proof, by the way!) is done in the XS subroutines.
 
 =head2 ARBITRARY SETS
 
 Note that it is extremely easy to implement sets of arbitrary intervals
-of integers using this package (negative indices are no obstacle),
+of integers using this module (negative indices are no obstacle),
 despite the fact that only intervals of positive integers (from
 zero to some positive integer) are supported directly.
 
@@ -376,6 +396,10 @@ C<$set-E<gt>Insert($index - $lowerbound);>
 =item
 
 C<$set-E<gt>Delete($index - $lowerbound);>
+
+=item
+
+C<$set-E<gt>flip($index - $lowerbound);>
 
 =item
 
@@ -413,6 +437,10 @@ C<$set-E<gt>Delete($index);>
 
 =item
 
+C<$set-E<gt>flip($index);>
+
+=item
+
 C<$set-E<gt>in($index);>
 
 =item
@@ -437,7 +465,10 @@ and provides the necessary translation as shown above.
 
 Please refer to L<Set::IntegerRange(3)> for more details!
 
-=head1 REFERENCE
+Please refer to L<Math::MatrixBool(3)> for yet another example on how
+to incorporate this module in your own applications!
+
+=head1 DETAILS
 
 =over 4
 
@@ -642,7 +673,7 @@ after invoking this method for the given set.
 C<$set-E<gt>Fill();>
 
 This method adds all elements the set can potentially contain
-to the set, yielding a "full" set ("~{}" or the complement of
+to the set, yielding a "full" set ("~{}", or the complement of
 the empty set).
 
 The method "$set->in($i)" returns true (1) for every element
@@ -654,10 +685,11 @@ C<$set-E<gt>Insert($i);>
 
 This method adds the element "$i" to the given set, i.e.,
 performs $set = $set + {$i} (where "+" stands for the "union"
-operator for sets).
+operator for sets, and where "{$i}" denotes a set that only
+contains the element "$i").
 
 If "$i" is outside of the range of [0..$elements-1] (where "$elements"
-stands for the maximum number of elements the given set was created with),
+is the maximum number of elements the given set was created with),
 an error message occurs.
 
 Note that negative indices "$i" will be interpreted as large
@@ -671,10 +703,40 @@ C<$set-E<gt>Delete($i);>
 
 This method deletes the element "$i" from the given set, i.e.,
 performs $set = $set \ {$i} (where "\" stands for the "difference"
-operator for sets).
+operator for sets, and where "{$i}" denotes a set that only
+contains the element "$i").
 
 If "$i" is outside of the range of [0..$elements-1] (where "$elements"
-stands for the maximum number of elements the given set was created with),
+is the maximum number of elements the given set was created with),
+an error message occurs.
+
+Note that negative indices "$i" will be interpreted as large
+positive numbers due to their internal 2's complement binary
+representation and most likely lie outside the permitted range
+(and cause an error message).
+
+=item *
+
+C<$set-E<gt>flip($i);>
+
+This method flips the element "$i" in the given set, i.e. B<adds> this
+element to the given set if it is B<not> contained in the set, or B<removes>
+this element from the given set if it B<is> contained in the set.
+
+In set theory terminology, this method performs the operation
+
+    $set = ( $set + {$i} ) \ ( $set * {$i} )
+
+(where "+", "*" and "\" stand for the "union", "intersection" and
+"difference" operators for sets, respectively, and where "{$i}"
+denotes a set that only contains the element "$i").
+
+After doing this, the method returns the B<new> state of the given
+element, i.e. it returns true (1) if the element "$i" is now contained
+in the given set, or false (0) otherwise.
+
+If "$i" is outside of the range of [0..$elements-1] (where "$elements"
+is the maximum number of elements the given set was created with),
 an error message occurs.
 
 Note that negative indices "$i" will be interpreted as large
@@ -693,7 +755,7 @@ It returns true (1) if the given set contains element "$i" and
 false (0) otherwise.
 
 If "$i" is outside of the range of [0..$elements-1] (where "$elements"
-stands for the maximum number of elements the given set was created with),
+is the maximum number of elements the given set was created with),
 an error message occurs.
 
 Note that negative indices "$i" will be interpreted as large
@@ -724,12 +786,19 @@ contained in) the given set.
 
 Note that the minimum of an empty set (see also the method "Empty"
 above) doesn't exist. Therefore, plus infinity (represented by the
-numeric constant LONG_MAX on your system) is returned as the minimum
+numeric constant "LONG_MAX" on your system) is returned as the minimum
 of an empty set.
 
 The reason for this is that plus infinity is always greater than
 any minimum of any non-empty set, so that the minimum of the minima
 of several sets always yields a meaningful value.
+
+If you need to know the value of the constant "LONG_MAX" (for instance
+for comparison), simply create a small, empty dummy set and determine
+its minimum, i.e., do something like this:
+
+    $dummy = Set::IntegerFast->new(1);
+    $LONG_MAX = $dummy->Min();
 
 =item *
 
@@ -740,12 +809,19 @@ contained in) the given set.
 
 Note that the maximum of an empty set (see also the method "Empty"
 above) doesn't exist. Therefore, minus infinity (represented by the
-numeric constant LONG_MIN on your system) is returned as the maximum
+numeric constant "LONG_MIN" on your system) is returned as the maximum
 of an empty set.
 
 The reason for this is that minus infinity is always less than
 any maximum of any non-empty set, so that the maximum of the maxima
 of several sets always yields a meaningful value.
+
+If you need to know the value of the constant "LONG_MIN" (for instance
+for comparison), simply create a small, empty dummy set and determine
+its maximum, i.e., do something like this:
+
+    $dummy = Set::IntegerFast->new(1);
+    $LONG_MIN = $dummy->Max();
 
 =item *
 
@@ -805,16 +881,16 @@ an error message.
 
 C<$set1-E<gt>ExclusiveOr($set2,$set3);>
 
-This method computes the symmetric difference of the two argu-
-ment sets, i.e., "( $set2 + $set3 ) \ ( $set2 * $set3 )", and
-stores the result in set "$set1".
+This method computes the symmetric difference of the two argument
+sets, i.e., "( $set2 + $set3 ) \ ( $set2 * $set3 )", and stores
+the result in set "$set1".
 
 Note that the above formula is equivalent to calculating the
 exclusive-or of the corresponding elements in the two argument
 sets, hence the name of this method.
 
 Calculating the exclusive-or is much faster than evaluating the
-above formula because it uses an intrinsic machine instruction.
+above formula because it uses a built-in machine language instruction.
 
 The information that initially was stored in the resulting set
 "$set1" gets overwritten, i.e., lost.
@@ -998,11 +1074,11 @@ you must do the following:
 
 =item -
 
-Change directory to the "F<Set-IntegerFast-2.0/>" distribution directory
+Change directory to the "F<Set-IntegerFast-2.1/>" distribution directory
 
 =item -
 
-Edit the file F<Makefile.PL> and change the line
+Edit the file F<Set/Makefile.PL> and change the line
 
     'DEFINE'		=> '',     # e.g., '-DHAVE_SOMETHING' 
 
@@ -1020,8 +1096,8 @@ Issue "make realclean", "perl Makefile.PL", "make test" and
 =back
 
 In most cases you won't need this, though. See the "Set::IntegerRange"
-module for how to expand the functionality of this class without need
-for formal subclassing or inheritance!
+and "Math::MatrixBool" modules for how to expand the functionality of
+this class without need for formal subclassing or inheritance!
 
 (Without need for any kludge, either!)
 
@@ -1045,6 +1121,7 @@ of "b" here)
     Fill                 n/b         n/b         n/b
     Insert               1           1           1
     Delete               1           1           1
+    flip                 1           1           1
     in                   1           1           1
     Norm                 n/b+n       n/b         <<P1>>       3)
     Min                  n/b+b       2           <<P2>>       4)
@@ -1099,7 +1176,7 @@ a completely empty set)
 
 =back
 
-For not too large values of "n", the average case complexity of the
+For values of "n" not too large, the average case complexity of the
 methods Norm, Min, Max, equal, lexorder, Compare and inclusion can
 be calculated with the following Perl subroutines (note the terms
 "2**$n" and even "2**(2*$n)" below which limit the computable
@@ -1348,44 +1425,16 @@ and inclusion)
 
 	__END__
 
-=head1 KNOWN BUGS
-
-Beware that calling the set object constructor method with the explicit
-name of a non-existing class, like in
-
-    $set = Set::IntegerFast::new('nonsense',$elements);
-
-will produce B<core dumps> as soon as Perl tries to DESTROY the object so
-created B<if> (and only if) B<subclassing is enabled>!
-
-This can only be prevented if there is a "package nonsense;" declaration
-somewhere in the program which is in effect when Perl tries or is forced
-to destroy the object!
-
-Example:
-
-    package main;
-
-    $set = Set::IntegerFast::new('nonsense',$elements);
-
-    package nonsense;
-
-    @ISA = qw(Set::IntegerFast);
-
-    $main::set = 0;
-
-    package main;
-
-    # rest of your program...
-
 =head1 SEE ALSO
 
-Set::IntegerRange(3), perl(1), perlsub(1), perlmod(1), perlref(1),
-perlobj(1), perlbot(1), perlxs(1), perlxstut(1), perlguts(1).
+Set::IntegerRange(3), Math::MatrixBool(3), Math::MatrixReal(3),
+DFA::Kleene(3), Kleene(3), Graph::Kruskal(3), perl(1), perlsub(1),
+perlmod(1), perlref(1), perlobj(1), perlbot(1), perlxs(1),
+perlxstut(1), perlguts(1).
 
 =head1 VERSION
 
-This man page documents Set::IntegerFast version 2.0.
+This man page documents Set::IntegerFast version 2.1.
 
 =head1 AUTHOR
 
@@ -1393,10 +1442,10 @@ Steffen Beyer <sb@sdm.de> (sd&m GmbH&Co.KG, Munich, Germany)
 
 =head1 COPYRIGHT
 
-Copyright (c) 1996 by Steffen Beyer. All rights reserved.
+Copyright (c) 1995, 1996, 1997 by Steffen Beyer. All rights reserved.
 
 =head1 LICENSE AGREEMENT
 
-This package is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+This package is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 

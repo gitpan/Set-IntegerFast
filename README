@@ -1,28 +1,136 @@
 =========================================
-  Module "Set::IntegerFast" Version 2.0
+  Package "Set-IntegerFast" Version 3.0
 =========================================
+    for Perl version 5.000 and higher
 
-------------------------------------------------------------------------------
- Extension Module for Perl 5.003 (should work with Perl 5.000 and up as well)
-------------------------------------------------------------------------------
+
+Contents of this file:
+----------------------
+
+    -   Legal stuff
+    -   Features
+    -   Requirements
+    -   Most important differences between versions 1.x and 2.0
+    -   What does it do
+    -   Preliminary steps for use with Perl prior to version 5.002
+    -   How to install it
+    -   Version history
+    -   Plans for the future
+    -   Credits
+    -   Final note
 
 
 Legal stuff:
 ------------
 
-Copyright (c) 1996 by Steffen Beyer. All rights reserved.
-This package is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+Copyright (c) 1995, 1996, 1997 by Steffen Beyer. All rights reserved.
+This package is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+
+Features:
+---------
+
+*   "lib_set.c":
+
+        +   efficient (fast) handling of bit vectors and set operations,
+            auto-configuring for using machine word as basic storage unit
+            (most efficient!)
+            (C library, completely independent of Perl)
+
+*   "Set::IntegerFast":
+
+        +   efficient (fast) object-oriented methods for handling sets
+            of integers (intervals from zero to some positive integer)
+            (Perl XSUBs in C, uses "lib_set.c")
+
+*   "Set::IntegerRange":
+
+        +   object-oriented methods for handling sets of integers
+            (arbitrary intervals)
+            (in Perl, uses "Set::IntegerFast")
+
+        +   overloaded arithmetic and relational operators
+            for still more ease of use
+            (in Perl, uses first part of "Set::IntegerRange")
+
+*   "Math::MatrixBool":
+
+        +   object-oriented methods for handling matrices of booleans
+            (Boolean Algebra)
+            (in Perl, uses "Set::IntegerFast")
+
+        +   overloaded arithmetic and relational operators
+            for still more ease of use
+            (in Perl, uses first part of "Math::MatrixBool")
+
+        +   computes reflexive transitive closure using Kleene's
+            algorithm (essential for solving path-problem in graphs)
+
+        +   this is mainly an example application to help you build
+            your own (using "Set::IntegerFast")
+
+*   "Math::MatrixReal":
+
+        +   object-oriented methods for handling matrices of reals
+            (for demonstration purposes only)
+            (in Perl, independent stand-alone module)
+
+        +   overloaded arithmetic and relational operators
+            allow you to use this data type (almost) like
+            any other built-in Perl data type
+
+        +   features another implementation of Kleene's algorithm to
+            compute the minimal costs for all paths in a graph with
+            weighted edges (the "weights" being the costs associated
+            with each edge)
+
+        +   allows to solve linear equation systems using an efficient
+            algorithm known as "L-R-decomposition" and several approxi-
+            mative (iterative) methods
+
+        +   allows you to convert a matrix into a string (in a nice,
+            human-readable format) and to read it back in later (for
+            instance from a file!), or using the shell-like "here-
+            document" syntax (among other possibilities):
+
+            $matrix = Math::MatrixReal->new_from_string(<<"MATRIX");
+            [   3    2    0   ]
+            [   0    3    2   ]
+            [  $c1  $c2  $c3  ]
+            MATRIX
+
+*   "DFA::Kleene":
+
+        +   still another implementation of Kleene's algorithm to compute
+            the language accepted by a Deterministic Finite Automaton
+            (for demonstration purposes only)
+            (in Perl, independent stand-alone module)
+
+*   "Graph::Kruskal":
+
+        +   implementation of Kruskal's efficient algorithm for Minimal
+            Spanning Trees in graphs in O( n * ld(n) )
+            (for demonstration purposes only)
+            (in Perl, independent stand-alone module)
+
+        +   example of an algorithm relying heavily on sets which uses
+            a different (fascinating!) representation for sets than the
+            "Set::IntegerFast" module (see the Graph::Kruskal(3) man page!)
+
+*   "Kleene.pod":
+
+        +   a short introduction into the theory behind Kleene's algorithm
 
 
 Requirements:
 -------------
 
-Perl version 5.000 or higher, a compiler complying with ANSI C standards (!).
-                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Perl version 5.000 or higher, a C compiler capable of the ANSI C standard (!)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-What are the most important differences between versions 1.x and 2.x:
+What are the most important differences between versions 1.x and 2.0:
 ---------------------------------------------------------------------
 
 1) The standard calling convention for the object constructor method
@@ -63,11 +171,11 @@ What are the most important differences between versions 1.x and 2.x:
 What does it do:
 ----------------
 
-This package allows you to create sets of arbitrary size (only limited
-by the size of a machine word (minimum) and available memory on your
-system (maximum)) of an interval of positive integers starting with zero,
-to dynamically change the size of such a set and to perform all the basic
-operations for sets on them, like
+The base module of this package, "Set::IntegerFast", allows you to create
+sets of arbitrary size (only limited by the size of a machine word and avai-
+lable memory on your system) of an interval of positive integers starting
+with zero, to dynamically change the size of such sets and to perform all
+the basic operations for sets on them, like
 
 - adding or removing elements,
 
@@ -84,44 +192,47 @@ operations for sets on them, like
   a set.
 
 Note that it is extremely easy to implement sets of arbitrary intervals
-of integers using this package (negative indices are no obstacle),
-despite the fact that only intervals of positive integers (from
-zero to some positive integer) are supported directly.
+of integers using this module (negative indices are no obstacle), despite
+the fact that only intervals of positive integers (from zero to some posi-
+tive integer) are supported directly.
 
-Please refer to the Set::IntegerFast(3) and Set::IntegerRange(3) man page
-to see how this is done!
+Please refer to the Set::IntegerFast(3) man page and the "Set::IntegerRange"
+module to see how this can be done!
 
-The package is mainly intended for mathematical or algorithmical computa-
+The module is mainly intended for mathematical or algorithmical computa-
 tions. There are also a number of efficient algorithms that rely on sets.
 
 An example of such an efficient algorithm (which uses a different repre-
-sentation for sets than this package, however) is Kruskal's algorithm for
+sentation for sets than this module, however) is Kruskal's algorithm for
 minimal spanning trees in graphs. (That algorithm is included in this dis-
-tribution as a Perl program (thoroughly commented) for those interested)
+tribution as a Perl module for those interested. Please refer to the
+Graph::Kruskal(3) man page for more details!)
 
 Another famous algorithm using sets is the "Seave of Erathostenes" for
-calculating prime numbers, which is included here as a demo program.
+calculating prime numbers, which is included here as a demo program
+(see "Set/primes.pl").
 
 An important field of application is the computation of "first", "follow"
 and "look-ahead" character sets for the construction of LL, SLR, LR and LALR
 parsers for compilers (or a compiler-compiler, like "yacc", for instance).
 
-(That's what the C code in this package was initially written for)
+(That's what the C library in this package was initially written for)
 
 (See Aho, Hopcroft, Ullman, "The Design and Analysis of Computer Algorithms"
 for an excellent book on efficient algorithms and the famous "Dragon Book"
 on how to build compilers by Aho, Sethi, Ullman)
 
-Therefore, this package is designed for efficiency and not for a fancy
-user interface.
+Therefore, this module is primarily designed for efficiency and not for a
+comfortable user interface (the latter can be added by additional modules,
+as shown by the "Set::IntegerRange" and "Math::MatrixBool" modules).
 
 It only offers a basic functionality and leaves it up to your application
 to add whatever special handling it needs (for example, negative indices
 can be realized by biasing the whole range with an offset).
 
-(See the "Set::IntegerRange.pm" module in this package for more details)
+(Please refer to the "Set::IntegerRange" module in this package to see how!)
 
-Sets in this package are implemented as bit vectors, and elements are positive
+Sets in this module are implemented as bit vectors, and elements are positive
 integers from zero to the maximum number of elements (which you specify when
 creating the set) minus one.
 
@@ -129,25 +240,25 @@ Each element (i.e., number or "index") thus corresponds to one bit in the
 bit array. Bit number 0 of word number 0 corresponds to element number 0,
 element number 1 corresponds to bit number 1 of word number 0, and so on.
 
-The package doesn't use bytes as basic storage unit, it rather uses machine
+The module doesn't use bytes as basic storage unit, it rather uses machine
 words, assuming that a machine word is the most efficiently handled size of
 all scalar types on any machine (that's what the C standard proposes and
-assumes).
+assumes anyway).
 
 In order to achieve this, it automatically determines the number of bits
 in a machine word on your system and then adjusts its internal constants
 accordingly.
 
 The greater the size of this basic storage unit, the better the complexity
-of the methods in this package (but also the greater the average waste of
+of the methods in this module (but also the greater the average waste of
 unused bits in the last word).
 
-See the section on COMPLEXITY in the Set::IntegerFast(3) man page for a
-detailed analysis of the complexity of each method!
+See the section on COMPLEXITY in the Set::IntegerFast(3) man page for an
+overview of the complexity of each method!
 
-Note that the C part of this package ("lib_set.c") is designed in such a
-way that it may be used independently from Perl and this Perl extension
-module as a C library.
+Note that the C library in this package ("lib_set.c") is designed in such
+a way that it may be used independently from Perl and this Perl extension
+module. (!)
 
 For this, you can use the file "lib_set.o" exactly as it is produced when
 building this module! It contains no references to Perl, and it doesn't need
@@ -160,28 +271,48 @@ whatsoever! (This is left to your application!)
 (See the corresponding explanation in the file "lib_set.c" for more details
 and the file "IntegerFast.xs" for an example of how this can be done!)
 
-In this package, all bounds and type checking (which should be absolutely
+In this module, all bounds and type checking (which should be absolutely
 fool-proof, by the way!) is done in the XS subroutines.
 
-For more details, see the Set::IntegerFast(3) man page!
+For more details on the modules in this package, please refer to their
+respective man pages!
 
 
 Preliminary steps for use with Perl prior to version 5.002:
 -----------------------------------------------------------
 
-Edit the file "Makefile.PL" in this package and change the line
+Edit all the "Makefile.PL" files in the subdirectories of this package:
 
+          DFA/Makefile.PL
+        Graph/Makefile.PL
+         Math/Makefile.PL
+          Set/Makefile.PL
+
+and change the lines
+
+    'VERSION_FROM'	=> 'Kleene.pm',
+    'VERSION_FROM'	=> 'Kruskal.pm',
+    'VERSION_FROM'	=> 'MatrixBool.pm',
     'VERSION_FROM'	=> 'IntegerFast.pm',
-to
-    'VERSION'		=> '2.0',
 
-Then edit the file "IntegerFast.pm" and change the line
+to
+
+    'VERSION'		=> '1.0',
+    'VERSION'		=> '2.0',
+    'VERSION'		=> '1.0',
+    'VERSION'		=> '2.1',
+
+respectively.
+
+Then edit the file "Set/IntegerFast.pm" and change the line
 
     bootstrap Set::IntegerFast $VERSION;
+
 to
+
     bootstrap Set::IntegerFast;
 
-Finally, edit the file "IntegerFast.xs" and delete the line
+Finally, edit the file "Set/IntegerFast.xs" and delete the line
 
     PROTOTYPES: DISABLE
 
@@ -193,13 +324,14 @@ Please unpack and build this package OUTSIDE the Perl source and distribution
 tree!!
 
  1) Change directory to the directory that has been created by unpacking this
-    package ("Set-IntegerFast-2.0/").
+    package ("Set-IntegerFast-3.0/").
 
  2) Type "perl Makefile.PL" (or whatever the name and path of your Perl 5
     binary is).
 
-    This will create a "Makefile" with the appropriate parameters for your
-    system (for instance, where the install directories are, and so on).
+    This will create several "Makefile"s with the appropriate parameters
+    for your system (for instance, where the install directories are, and
+    so on).
 
  3) Type "make".
 
@@ -208,21 +340,18 @@ tree!!
 
     Please refer to the MakeMaker documentation for instructions on how
     to build a new Perl with statically linked libraries (invoke "perldoc
-    ExtUtils::MakeMaker" for this), if your system DOESN'T support dynamic
+    ExtUtils::MakeMaker" for this) if your system DOESN'T support dynamic
     linking!
-
-    (Note, however, that I didn't test this since my system does support
-    dynamic linking.)
 
     Should you encounter any compiler warnings or errors (like the redefi-
     nition of certain types already defined by your system), please contact
     me by mail at <sb@sdm.de>, sending me your compiler output (both STDOUT
     and STDERR). Thank you!
 
-    ======================================================================
-    Be aware that you need a C compiler which supports ANSI C in order to
-    successfully compile this package!
-    ======================================================================
+    =====================================================================
+     Beware that you need a C compiler which supports ANSI C in order to
+     successfully compile this package!
+    =====================================================================
 
     Also note that problems may arise with the c89 compiler of HP, although
     it allegedly supports ANSI C!
@@ -239,7 +368,8 @@ tree!!
     IntegerFast.c: 16: Unable to find include file 'perl.h'.
     IntegerFast.c: 17: Unable to find include file 'XSUB.h'.
 
-    then edit the file "Makefile.PL" and change the line
+    then edit the "Makefile.PL" files in this distribution and change the
+    line
 
     'INC'	=> '',     # e.g., '-I/opt/pkg/perl5.003/dist' 
 
@@ -247,13 +377,17 @@ tree!!
 
     'INC'	=> '-I/usr/ctr/dlt/private/perl/perl5.003',
 
-    or the like, and start over with the generation of the Makefile at 2).
+    or the like, invoke "make realclean" and start over with the generation
+    of the Makefile with "perl Makefile.PL" at point 2).
 
  4) Now issue "make test".
 
     The output should look somewhat like this:
 
-    PERL_DL_NONLAZY=1 /usr/bin/perl -I./blib/arch -I./blib/lib
+    No tests defined for DFA::Kleene extension.
+    No tests defined for Graph::Kruskal extension.
+    No tests defined for Math::MatrixBool extension.
+    PERL_DL_NONLAZY=1 /usr/bin/perl -I.././blib/arch -I.././blib/lib
     -I/e/www/sw/pkg/perl/lib/i386-freebsd/5.003 -I/e/www/sw/pkg/perl/lib
     -e 'use Test::Harness qw(&runtests $verbose); $verbose=0;
     runtests @ARGV;' t/*.t
@@ -267,17 +401,26 @@ tree!!
     t/07___lexorder.....ok
     t/08_____resize.....ok
     t/09_parameters.....ok
+    t/10____version.....ok
+    t/11________new.....ok
+    t/12_overloaded.....ok
+    t/13_parameters.....ok
+    t/20____version.....ok
+    t/30____version.....ok
+    t/40____version.....ok
+    t/50____version.....ok
     All tests successful.
-    Files=10,  Tests=3012,  2 secs ( 3.62 cusr  0.50 csys =  4.12 cpu)
-
-    (Note that these tests test the "Set::IntegerFast" module ONLY; the
-    "Set::IntegerRange" module is currently NOT tested because of its
-    simplicity!)
+    Files=18,  Tests=4076,  4 secs ( 6.97 cusr  1.08 csys =  8.05 cpu)
+    PERL_DL_NONLAZY=1 /usr/bin/perl -I.././blib/arch -I.././blib/lib
+    -I/e/www/sw/pkg/perl/lib/i386-freebsd/5.003 -I/e/www/sw/pkg/perl/lib
+    test.pl
+    >>> 'Set::IntegerFast': Subclassing is disabled (default)
 
  5) At last, type "make install".
         
- 6) Now you can try to run the "demo". Start it with "perl demo" (or what-
-    ever the name and path of your Perl 5 binary is).
+ 6) Now you can try to run the "Set/primes.pl" demo program. Start it with
+    "perl Set/primes.pl" (or whatever the name and path of your Perl 5 binary
+    is).
 
     It will ask you to enter a number which will serve as an upper limit for
     the calculation of all prime numbers up to that limit, using the algorithm
@@ -313,51 +456,70 @@ Version 1.1 broke with the next new release of Perl, version 5.002 (problems
 with the "Destroy" method and "bad free() ignored" warnings that caused some
 of the tests in "make test" to fail).
 
-Version 2.0 fixes the problem that appeared with Perl 5.002 in version 1.1.
+Version 2.0 fixed the problem that appeared with Perl 5.002 in version 1.1.
 
-As a matter of fact, version 2.0 is a complete rewrite of the XSUB part of
-this package. The C part of the package ("lib_set.c") has also been slightly
-changed; the functions "lexorder" and "Compare" are handled more efficiently
-now (complexity 1..n/b instead of 1..n/8). Parameter types have been adjusted
-to reflect their nature as those integers that the sets of this package are
-all about. The documentation has been completely rewritten and ported to POD
-format.
+As a matter of fact, version 2.0 was a complete rewrite of the XSUB part
+of this package. The C library of the package ("lib_set.c") has also been
+slightly changed; the functions "lexorder" and "Compare" are handled more
+efficiently now (complexity 1..n/b instead of 1..n/8). Parameter types have
+been adjusted to reflect their nature as those integers that the sets of this
+package are all about. The documentation has been completely rewritten and
+ported to POD format.
 
 A new module (in fact a "wrapper" module for the "Set::IntegerFast" module)
-named "Set::IntegerRange" has been added in version 2.0 of this package which
-allows you to use sets of integers in an *arbitrary* interval (instead of from
-zero to some positive integer).
+named "Set::IntegerRange" (with version number 1.0) has been added in version
+2.0 of this package which allows you to use sets of integers in an *arbitrary*
+interval (instead of from zero to some positive integer).
+
+Version 2.1 of the "Set::IntegerFast" module (and version 2.0 of the
+"Set::IntegerRange" module) introduces a new method, "flip", which flips
+an element and returns its new state. It also fixes the "known bug" men-
+tioned in the README file and man page of "Set::IntegerFast" version 2.0.
+
+Version 2.0 of the "Set::IntegerRange" module also introduces the possibility
+to use overloaded operators (instead of explicit method calls).
+
+Starting with the version 2.1 of the "Set::IntegerFast" module, the
+"Set-IntegerFast" distribution has a version number independent of the
+"Set::IntegerFast" module, beginning with version number 3.0.
+
+This is because in this version (version 3.0 of the "Set-IntegerFast"
+distribution and version 2.1 of the "Set::IntegerFast" module) a couple
+of companion modules have been added:
+
+"Math::MatrixBool", "Math::MatrixReal" and "DFA::Kleene"; and the former
+"kruskal" demo program has been upgraded to a Perl module ("Graph::Kruskal")
+as well.
+
+A short essay about the theory behind Kleene's algorithm has also been added.
+
+The directory structure of the distribution had to be adjusted accordingly,
+and separate Makefiles had to be provided instead of a single one in order
+to assure correct building and installation of the modules without changing
+the standard procedure: "perl Makefile.PL ; make ; make test ; make install".
+
+There exists an alternate way of doing this which doesn't need the many
+Makefile.PL's which would consist in creating a "lib" subdirectory in the
+root directory of this distribution and to move the subdirectories "DFA",
+"Graph" and "Math" into it. It's just that I like the first way better...
 
 
-Known bugs:
------------
+Plans for the future:
+---------------------
 
-Beware that calling the set object constructor method with the explicit
-name of a non-existing class, like in
+See if "confess" instead of "croak" everywhere (especially in the XSUBs)
+would provide the user with a hint where in his program an error detected
+at the bottom of a calling hierarchy of modules really comes from as I
+imagine it. See if this really is a problem that can possibly occur.
+(Till now, I could only provoke this using dirty tricks!)
 
-$set = Set::IntegerFast::new('nonsense',$elements);
-
-will produce CORE DUMPS as soon as Perl tries to DESTROY the object so
-created IF (and only if) SUBCLASSING IS ENABLED!
-
-This can only be prevented if there is a "package nonsense;" declaration
-somewhere in the program which is in effect when Perl tries or is forced
-to destroy the object!
-
-Example:
-
-package main;
-$set = Set::IntegerFast::new('nonsense',$elements);
-package nonsense;
-@ISA = qw(Set::IntegerFast);
-$main::set = 0;
-package main;
-
-# rest of your program...
+Define test cases for "Math::MatrixBool" and "Math::MatrixReal" (which is
+not trivial for the latter since results will depend on the local imple-
+mentation of floating point arithmetics on a given machine!).
 
 
-Thanks:
--------
+Credits:
+--------
 
 Many thanks to Andreas Koenig <upload@franz.ww.tu-berlin.de> for his
 efforts as upload-manager for the CPAN, his patience, and lots of good
@@ -397,6 +559,10 @@ problem of the version 1.1 of this module with Perl 5.002!
 
 Special thanks to Dean Roehrich <roehrich@cray.com> for his assistance
 in trying to find the cause of and a remedy for the above problem!
+
+Many thanks to Andreas Koenig for notifying me of the alternative for the
+directory structure using the "lib" subdirectory and a way to use "confess"
+in an XSUB via "perl_eval_sv".
 
 
 Final note:

@@ -270,22 +270,22 @@ $n++;
 # test weird ways of calling the constructor:
 
 eval { $set = Set::IntegerFast::new("",8); };
-if ($@ =~ /error in first parameter \(class name or reference\)/)
+if ($@ =~ /Set::IntegerFast::new\(\): error in first parameter \(class name or reference\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new('',9); };
-if ($@ =~ /error in first parameter \(class name or reference\)/)
+if ($@ =~ /Set::IntegerFast::new\(\): error in first parameter \(class name or reference\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new(undef,10); };
-if ($@ =~ /error in first parameter \(class name or reference\)/)
+if ($@ =~ /Set::IntegerFast::new\(\): error in first parameter \(class name or reference\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new(6502,11); };
-if ($@ =~ /error in first parameter \(class name or reference\)/)
+if ($@ =~ /Set::IntegerFast::new\(\): error in first parameter \(class name or reference\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -308,38 +308,6 @@ unless ($@)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
-## ===========
-##   BEWARE:
-## ===========
-##
-## Calling the constructor with the explicit name of a non-existing class,
-## like in
-##
-## $set = Set::IntegerFast::new('nonsense',$elements);
-##
-## will produce CORE DUMPS as soon as Perl tries to DESTROY the object so
-## created.
-##
-## This can only be prevented if there is a "package nonsense;" declaration
-## somewhere in the program which is in effect when Perl tries or is forced
-## to destroy the object!
-##
-## Example:
-##
-## package main;
-##
-## $set = Set::IntegerFast::new('nonsense',$elements);
-##
-## package nonsense;
-##
-## @ISA = qw(Set::IntegerFast);
-##
-## $main::set = 0;
-##
-## package main;
-##
-## ...rest of program...
-
 eval { $set = Set::IntegerFast::new('nonsense',13); };
 unless ($@)
 {print "ok $n\n";} else {print "not ok $n\n";}
@@ -354,11 +322,7 @@ if (${$set} != 0)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
-package nonsense;
-@ISA = qw(Set::IntegerFast);
-eval { $main::set = 0; };
-package main;
-
+eval { $set = 0; };
 unless ($@)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;

@@ -11,13 +11,15 @@ use Set::IntegerFast;
 #   $set->Empty();
 #   $set->Delete($i);
 #   $set->Insert($i);
+#   $set->flip($i);
 #   $set->in($i);
 #   $set->Norm();
+#   $set1->equal($set2);
 # ======================================================================
 
 $limit = 1000;
 
-print "1..", ($limit+2)*2, "\n";
+print "1..", ($limit+2)*2+1, "\n";
 
 @prime = (0) x ($limit+1);
 
@@ -222,7 +224,7 @@ for ( $i = 0; $i <= $limit; ++$i )
     if ($set1->in($i) == $prime[$i])
     {print "ok $n\n";} else {print "not ok $n\n";}
     $n++;
-    if ($set2->in($i) == (1-$prime[$i]))
+    if ($set2->flip($i) == $prime[$i])
     {print "ok $n\n";} else {print "not ok $n\n";}
     $n++;
 }
@@ -231,7 +233,11 @@ if ($set1->Norm() == 168)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
-if ($set2->Norm() == ($limit-167))
+if ($set2->Norm() == 168)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+
+if ($set1->equal($set2))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 

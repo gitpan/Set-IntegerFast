@@ -3,31 +3,28 @@
 use strict;
 no strict "vars";
 
-use Set::IntegerFast;
+use Set::IntegerRange;
 
 # ======================================================================
 #   parameter checks
 # ======================================================================
 
-$prefix = 'Set::IntegerFast';
+$prefix = 'Set::IntegerRange';
 
 $bad_idx = 'index out of range';
 
 $mismatch = 'set size mismatch';
 
-$bad_type = "not a '$prefix' object reference";
-
 $numeric  = 1 << 3;
-$special  = 1 << 4;
 
 $limit = $numeric;
 
-$method_list{'Resize'}       = 2 + $numeric;
 $method_list{'Empty'}        = 1;
 $method_list{'Fill'}         = 1;
-$method_list{'Insert'}       = 2 + $numeric + $special;
-$method_list{'Delete'}       = 2 + $numeric + $special;
-$method_list{'in'}           = 2 + $numeric + $special;
+$method_list{'Insert'}       = 2 + $numeric;
+$method_list{'Delete'}       = 2 + $numeric;
+$method_list{'flip'}         = 2 + $numeric;
+$method_list{'in'}           = 2 + $numeric;
 $method_list{'Norm'}         = 1;
 $method_list{'Min'}          = 1;
 $method_list{'Max'}          = 1;
@@ -42,51 +39,87 @@ $method_list{'lexorder'}     = 2;
 $method_list{'Compare'}      = 2;
 $method_list{'Copy'}         = 2;
 
-print "1..535\n";
+$operator_list{'+'}   = 1;
+$operator_list{'|'}   = 1;
+$operator_list{'-'}   = 1;
+$operator_list{'*'}   = 1;
+$operator_list{'&'}   = 1;
+$operator_list{'^'}   = 1;
+$operator_list{'=='}  = 1;
+$operator_list{'!='}  = 1;
+$operator_list{'<'}   = 1;
+$operator_list{'<='}  = 1;
+$operator_list{'>'}   = 1;
+$operator_list{'>='}  = 1;
+$operator_list{'cmp'} = 1;
+$operator_list{'eq'}  = 1;
+$operator_list{'ne'}  = 1;
+$operator_list{'lt'}  = 1;
+$operator_list{'le'}  = 1;
+$operator_list{'gt'}  = 1;
+$operator_list{'ge'}  = 1;
+
+print "1..729\n";
 
 $n = 1;
 
-$set = Set::IntegerFast->new($limit);
+$set = Set::IntegerRange->new(-$limit,$limit);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (ref($set) eq $prefix)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (${$set} != 0)
+$set->Insert(-1);
+if ($set->Norm() == 1)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
-$set1 = Set::IntegerFast->new($limit-1);
+$set0 = Set::IntegerRange->new(-$limit,$limit);
+if (defined $set0)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if (ref($set0) eq $prefix)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+$set0->Insert(-1);
+if ($set0->Norm() == 1)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+
+$set1 = Set::IntegerRange->new(-$limit+1,$limit-1);
 if (defined $set1)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (ref($set1) eq $prefix)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (${$set1} != 0)
+$set1->Insert(-1);
+if ($set1->Norm() == 1)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
-$set2 = Set::IntegerFast->new($limit-2);
+$set2 = Set::IntegerRange->new(-$limit+2,$limit-2);
 if (defined $set2)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (ref($set2) eq $prefix)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (${$set2} != 0)
+$set2->Insert(-1);
+if ($set2->Norm() == 1)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
-$set3 = Set::IntegerFast->new($limit-3);
+$set3 = Set::IntegerRange->new(-$limit+3,$limit-3);
 if (defined $set3)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (ref($set3) eq $prefix)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (${$set3} != 0)
+$set3->Insert(-1);
+if ($set3->Norm() == 1)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -98,6 +131,18 @@ if ($set->in(0))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 $set->Delete(0);
+if (! $set->in(0))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($set->flip(0))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($set->in(0))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if (! $set->flip(0))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 if (! $set->in(0))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
@@ -113,6 +158,18 @@ $set->Delete(1);
 if (! $set->in(1))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+if ($set->flip(1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($set->in(1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if (! $set->flip(1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if (! $set->in(1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 if (! $set->in($limit-2))
 {print "ok $n\n";} else {print "not ok $n\n";}
@@ -122,6 +179,18 @@ if ($set->in($limit-2))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 $set->Delete($limit-2);
+if (! $set->in($limit-2))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($set->flip($limit-2))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($set->in($limit-2))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if (! $set->flip($limit-2))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 if (! $set->in($limit-2))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
@@ -137,26 +206,37 @@ $set->Delete($limit-1);
 if (! $set->in($limit-1))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+if ($set->flip($limit-1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($set->in($limit-1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if (! $set->flip($limit-1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if (! $set->in($limit-1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 foreach $method (keys %method_list)
 {
     $parms = $method_list{$method};
-    next unless (($parms & $numeric) && ($parms & $special));
+    next unless ($parms & $numeric);
     $parms -= $numeric;
-    $parms -= $special;
     next unless ($parms > 1);
-    for ( $i = 0; $i <= $limit; $i++ )
+    for ( $i = -($limit+1); $i <= $limit+1; $i++ )
     {
         undef @parameters;
         for ( $j = 0; $j < $parms - 1; $j++ )
         {
             $parameters[$j] = $i;
         }
-        for ( $j = 1; $j <= 3; $j++ )
+        for ( $j = 0; $j <= 3; $j++ )
         {
             $action = "${prefix}::$method(\$set${j},\@parameters)";
             eval "$action";
-            if ($i < ($limit - $j))
+            if (($i >= -($limit - $j)) && ($i <= ($limit - $j)))
             {
                 unless ($@)
                 {print "ok $n\n";} else {print "not ok $n\n";}
@@ -172,34 +252,17 @@ foreach $method (keys %method_list)
     }
 }
 
-eval { $set->Insert(-1); };
-if ($@ =~ /${prefix}::Insert\(\): $bad_idx/)
-{print "ok $n\n";} else {print "not ok $n\n";}
-$n++;
-
-eval { $set->Delete(-1); };
-if ($@ =~ /${prefix}::Delete\(\): $bad_idx/)
-{print "ok $n\n";} else {print "not ok $n\n";}
-$n++;
-
-eval { $set->in(-1); };
-if ($@ =~ /${prefix}::in\(\): $bad_idx/)
-{print "ok $n\n";} else {print "not ok $n\n";}
-$n++;
-
 foreach $method (keys %method_list)
 {
     $num_flag = 0;
-    $idx_flag = 0;
     $parms = $method_list{$method};
     if ($parms & $numeric) { $parms -= $numeric; $num_flag = 1; }
-    if ($parms & $special) { $parms -= $special; $idx_flag = 1; }
     for ( $i = 0; $i <= $parms + 1; $i++ )
     {
         undef @parameters;
         for ( $j = 0; $j < $i - 1; $j++ )
         {
-            if ($num_flag) { $parameters[$j] = $limit; }
+            if ($num_flag) { $parameters[$j] = $limit+1; }
             else           { $parameters[$j] = $set; }
         }
         if ($i == 0)
@@ -223,7 +286,7 @@ foreach $method (keys %method_list)
         }
         else
         {
-            if ($idx_flag)
+            if ($num_flag)
             {
                 if ($@ =~ /${prefix}::$method\(\): $bad_idx/)
                 {print "ok $n\n";} else {print "not ok $n\n";}
@@ -234,28 +297,6 @@ foreach $method (keys %method_list)
                 unless ($@)
                 {print "ok $n\n";} else {print "not ok $n\n";}
                 $n++;
-            }
-            if ($parms > 0)
-            {
-                $fake = undef;
-                &test_fake;
-
-                $fake = 0x00088850;
-                &test_fake;
-
-                $obj = 0x000E9CE0;
-                $fake = \$obj;
-                &test_fake;
-
-                bless($fake, 'nonsense');
-                &test_fake;
-
-                bless($fake, $prefix);
-                &test_fake;
-
-                $fake = Set::IntegerFast->new($limit);
-                Set::IntegerFast::DESTROY($fake);
-                &test_fake;
             }
             if ((! $num_flag) && ($parms > 1))
             {
@@ -296,95 +337,66 @@ foreach $method (keys %method_list)
     }
 }
 
+foreach $operator (keys %operator_list)
+{
+    $obj = 0x000E9CE0;
+    $fake = \$obj;
+    if (ref($fake) eq 'SCALAR')
+    {print "ok $n\n";} else {print "not ok $n\n";}
+    $n++;
+    &test_fake;
+
+    $fake = [ ];
+    if (ref($fake) eq 'ARRAY')
+    {print "ok $n\n";} else {print "not ok $n\n";}
+    $n++;
+    &test_fake;
+ 
+    $fake = { };
+    if (ref($fake) eq 'HASH')
+    {print "ok $n\n";} else {print "not ok $n\n";}
+    $n++;
+    &test_fake;
+ 
+    $fake = sub { };
+    if (ref($fake) eq 'CODE')
+    {print "ok $n\n";} else {print "not ok $n\n";}
+    $n++;
+    &test_fake;
+ 
+    $obj = { };
+    $fake = \$obj;
+    if (ref($fake) eq 'REF')
+    {print "ok $n\n";} else {print "not ok $n\n";}
+    $n++;
+    &test_fake;
+}
+
 exit;
 
 sub test_fake
 {
-    my($message) = quotemeta("${prefix}::${method}(): $bad_type");
+    my($message);
 
-    if ($num_flag)
-    {
-        if ($parms == 1)
-        {
-            $action = "${prefix}::$method(\$fake)";
-        }
-        else
-        {
-            $action = "${prefix}::$method(\$fake,\@parameters)";
-        }
-        eval "$action";
-        if ($@ =~ /$message/)
-        {print "ok $n\n";} else {print "not ok $n\n";}
-        $n++;
-    }
+    if ($operator =~ /^[a-z]+$/)
+        { $message = quotemeta("$prefix cmp: wrong argument type"); }
+    elsif ($operator eq '|')
+        { $message = quotemeta("$prefix '+': wrong argument type"); }
+    elsif ($operator eq '&')
+        { $message = quotemeta("$prefix '*': wrong argument type"); }
     else
-    {
-        if ($parms == 1)
-        {
-            $action = "${prefix}::$method(\$fake)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-        }
-        elsif ($parms == 2)
-        {
-            $action = "${prefix}::$method(\$set,\$fake)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-            $action = "${prefix}::$method(\$fake,\$set)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-            $action = "${prefix}::$method(\$fake,\$fake)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-        }
-        elsif ($parms == 3)
-        {
-            $action = "${prefix}::$method(\$set,\$set,\$fake)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-            $action = "${prefix}::$method(\$set,\$fake,\$set)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-            $action = "${prefix}::$method(\$set,\$fake,\$fake)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-            $action = "${prefix}::$method(\$fake,\$set,\$set)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-            $action = "${prefix}::$method(\$fake,\$set,\$fake)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-            $action = "${prefix}::$method(\$fake,\$fake,\$set)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-            $action = "${prefix}::$method(\$fake,\$fake,\$fake)";
-            eval "$action";
-            if ($@ =~ /$message/)
-            {print "ok $n\n";} else {print "not ok $n\n";}
-            $n++;
-        }
-        else { }
-    }
+        { $message = quotemeta("$prefix '$operator': wrong argument type"); }
+
+    $action = "\$temp = \$set $operator \$fake";
+    eval "$action";
+    if ($@ =~ /$message/)
+    {print "ok $n\n";} else {print "not ok $n\n";}
+    $n++;
+    $action = "\$temp = \$fake $operator \$set";
+    eval "$action";
+    if ($@ =~ /$message/)
+    {print "ok $n\n";} else {print "not ok $n\n";}
+    $n++;
 }
 
 __END__

@@ -1,7 +1,7 @@
 /*
-  Copyright (c) 1996 Steffen Beyer. All rights reserved.
-  This package is free software; you can redistribute it and/or
-  modify it under the same terms as Perl itself.
+  Copyright (c) 1995, 1996, 1997 by Steffen Beyer. All rights reserved.
+  This package is free software; you can redistribute it and/or modify
+  it under the same terms as Perl itself.
 */
 
 #include "EXTERN.h"
@@ -119,7 +119,7 @@ Version()
 PPCODE:
 {
     EXTEND(sp,1);
-    PUSHs(sv_2mortal(newSVpv("2.0",0)));
+    PUSHs(sv_2mortal(newSVpv("2.1",0)));
 }
 
 
@@ -161,8 +161,10 @@ PPCODE:
 
     if (address != NULL)
     {
-        handle = sv_2mortal(newSViv((IV)address));
-        reference = sv_bless(sv_2mortal(newRV(handle)),gv_stashpv((char *)class,0));
+        handle = newSViv((IV)address);
+        reference = sv_bless(sv_2mortal(newRV(handle)),
+            gv_stashpv((char *)class,1));
+        SvREFCNT_dec(handle);
         SvREADONLY_on(handle);
         PUSHs(reference);
     }
@@ -289,6 +291,29 @@ CODE:
     else
         croak("Set::IntegerFast::Delete(): not a 'Set::IntegerFast' object reference");
 }
+
+
+boolean
+Set_flip(reference,index)
+Set_Object	reference
+N_int	index
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        if (index >= *(address-3))
+            croak("Set::IntegerFast::flip(): index out of range");
+        else
+            RETVAL = Set_flip(address,index);
+    }
+    else
+        croak("Set::IntegerFast::flip(): not a 'Set::IntegerFast' object reference");
+}
+OUTPUT:
+RETVAL
 
 
 boolean
