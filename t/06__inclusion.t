@@ -17,8 +17,8 @@ $n = 1;
 for ( $b = 1; $b <= $bits; ++$b )
 {
 
-    $set1 = Set::IntegerFast::Create($b);
-    $set2 = Set::IntegerFast::Create($b);
+    $set1 = new Set::IntegerFast($b);
+    $set2 = new Set::IntegerFast($b);
 
     $c1 = 0;
     $c2 = 0;
@@ -50,11 +50,7 @@ for ( $b = 1; $b <= $bits; ++$b )
 
     if ($c1 == $c2)
     {print "ok $n\n";} else {print "not ok $n\n";}
-
-    $set1->Destroy;
-    $set2->Destroy;
-
-    $n++
+    $n++;
 }
 
 exit;
@@ -76,3 +72,4 @@ sub binomial
 }
 
 __END__
+

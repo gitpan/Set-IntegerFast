@@ -1,59 +1,125 @@
 =========================================
-  Module "Set::IntegerFast" Version 1.1
+  Module "Set::IntegerFast" Version 2.0
 =========================================
 
---------------------------------------------------------------------------------
- Extension package for Perl 5.001m (should work with Perl 5.000 and up as well)
---------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+ Extension Module for Perl 5.003 (should work with Perl 5.000 and up as well)
+------------------------------------------------------------------------------
 
 
 Legal stuff:
 ------------
 
-Copyright (c) 1995 by Steffen Beyer. All rights reserved.
+Copyright (c) 1996 by Steffen Beyer. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
+
+
+Requirements:
+-------------
+
+Perl version 5.000 or higher, a compiler complying with ANSI C standards (!).
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+What are the most important differences between versions 1.x and 2.x:
+---------------------------------------------------------------------
+
+1) The standard calling convention for the object constructor method
+   is supported now, i.e.
+
+            $set = Set::IntegerFast::Create($elements);
+
+   is _gone_ and is replaced by
+
+            $set = new Set::IntegerFast($elements);
+
+   (and also including all other possibilities of calling a class method
+   offered by Perl)
+
+2) The object destructor method has also changed its name:
+
+            $set->Destroy();
+
+   is also _gone_ and replaced by
+
+            $set->DESTROY();
+
+   Note however that you don't need to call this method explicitly
+   anymore (!) - Perl will do it automatically for you when the last
+   reference to your set is deleted, for instance through assigning
+   a different value to the Perl variable containing the reference
+   to your set, like in "$set = 0;".
+
+3) The man page is no separate file anymore, it is now included in
+   the file "IntegerFast.pm" in POD format, where it will automatically
+   be found and installed in your "man" directory by "make install".
+
+4) A wrapper module named "Set::IntegerRange" has been added to this
+   package which allows you to use sets of integers in an *arbitrary*
+   interval (instead of from zero to some positive integer).
 
 
 What does it do:
 ----------------
 
-This package lets you dynamically create sets of arbitrary (changeable!) size
-(only limited by the size of a machine word and available memory on your system)
-of (positive) integers and to perform all the basic operations for sets on them,
-like adding or removing elements, testing for the presence of a certain element,
-computing the union, intersection, difference or complement of sets, copying
-sets, testing two sets for equality or inclusion, and computing the minimum,
-the maximum and the norm (number of elements) of a set.
+This package allows you to create sets of arbitrary size (only limited
+by the size of a machine word (minimum) and available memory on your
+system (maximum)) of an interval of positive integers starting with zero,
+to dynamically change the size of such a set and to perform all the basic
+operations for sets on them, like
 
-The package is mainly intended for mathematical or algorithmical computations.
-There are a number of efficient algorithms that rely on sets, like, for exam-
-ple, Kruskal's algorithm for minimal spanning trees in graphs (which uses a
-different representation of sets (trees stored in an array), however, than
-the one used by this package (bit vectors), which is included here for those
-interested as a Perl program), or the "Seave of Erathostenes" for calculating
-prime numbers, which is included here as a demo program.
+- adding or removing elements,
 
-Another important field of application is the computation of "first", "follow"
+- testing for the presence of a certain element,
+
+- computing the union, intersection, difference, symmetric difference or
+  complement of sets,
+
+- copying sets,
+
+- testing two sets for equality or inclusion, and
+
+- computing the minimum, the maximum and the norm (number of elements) of
+  a set.
+
+Note that it is extremely easy to implement sets of arbitrary intervals
+of integers using this package (negative indices are no obstacle),
+despite the fact that only intervals of positive integers (from
+zero to some positive integer) are supported directly.
+
+Please refer to the Set::IntegerFast(3) and Set::IntegerRange(3) man page
+to see how this is done!
+
+The package is mainly intended for mathematical or algorithmical computa-
+tions. There are also a number of efficient algorithms that rely on sets.
+
+An example of such an efficient algorithm (which uses a different repre-
+sentation for sets than this package, however) is Kruskal's algorithm for
+minimal spanning trees in graphs. (That algorithm is included in this dis-
+tribution as a Perl program (thoroughly commented) for those interested)
+
+Another famous algorithm using sets is the "Seave of Erathostenes" for
+calculating prime numbers, which is included here as a demo program.
+
+An important field of application is the computation of "first", "follow"
 and "look-ahead" character sets for the construction of LL, SLR, LR and LALR
-parsers for compilers (or a compiler-compiler, like "yacc").
+parsers for compilers (or a compiler-compiler, like "yacc", for instance).
 
-(This is what the C code in this package was initially written for)
+(That's what the C code in this package was initially written for)
 
 (See Aho, Hopcroft, Ullman, "The Design and Analysis of Computer Algorithms"
-for an excellent book on efficient algorithms and the famous "Dragon Book" on
-how to build compilers by Aho, Sethi, Ullman)
+for an excellent book on efficient algorithms and the famous "Dragon Book"
+on how to build compilers by Aho, Sethi, Ullman)
 
-The package is designed for efficiency, not comfort. Therefore, it only
-offers a basic functionality and leaves it up to your application to add
-whatever special handling it needs (for example, negative indices can
-be realized by "shifting" the whole range with an offset).
+Therefore, this package is designed for efficiency and not for a fancy
+user interface.
 
-If you want a package for sets that offers more comfort for not so time-
-critical tasks, consider using the module "Set::Scalar" written by Jarkko
-Hietaniemi <Jarkko.Hietaniemi@hut.fi>, which allows you to use all kinds of
-Perl scalars as elements and offers an abundant range of methods to handle
-these sets.
+It only offers a basic functionality and leaves it up to your application
+to add whatever special handling it needs (for example, negative indices
+can be realized by biasing the whole range with an offset).
+
+(See the "Set::IntegerRange.pm" module in this package for more details)
 
 Sets in this package are implemented as bit vectors, and elements are positive
 integers from zero to the maximum number of elements (which you specify when
@@ -65,45 +131,59 @@ element number 1 corresponds to bit number 1 of word number 0, and so on.
 
 The package doesn't use bytes as basic storage unit, it rather uses machine
 words, assuming that a machine word is the most efficiently handled size of
-all scalar types on any system.
+all scalar types on any machine (that's what the C standard proposes and
+assumes).
 
 In order to achieve this, it automatically determines the number of bits
-in a machine word on your system and then sets its internal basic constants
+in a machine word on your system and then adjusts its internal constants
 accordingly.
 
 The greater the size of this basic storage unit, the better the complexity
-of the routines in this package (but also the greater the average waste of
+of the methods in this package (but also the greater the average waste of
 unused bits in the last word).
 
-See the Set::IntegerFast(3) man page for a detailed analysis of the com-
-plexity of each method!
+See the section on COMPLEXITY in the Set::IntegerFast(3) man page for a
+detailed analysis of the complexity of each method!
 
-Here a brief description of all the available methods:
+Note that the C part of this package ("lib_set.c") is designed in such a
+way that it may be used independently from Perl and this Perl extension
+module as a C library.
 
-     Version       returns a version string
-     Create        the set object constructor
-     Destroy       free() the memory occupied by a set
-     Resize        change the size of a set
-     Empty         delete all elements in the set
-     Fill          insert all possible elements into the set
-     Insert        insert a given element
-     Delete        delete a given element
-     in            test the presence of a given element
-     Union         calculate the union of two sets   (in-place is possible)
-     Intersection  calculate the intersection of two sets            (idem)
-     Difference    calculate the difference of two sets ("A\B")      (idem)
-     ExclusiveOr   calculate the symmetric difference of two sets    (idem)
-     Complement    calculate the complement of a set (in-place is possible)
-     equal         test two sets for equality relation
-     inclusion     test two sets for inclusion relation
-     lexorder      test two sets for lexical order relation
-     Compare       compare two sets - yields -1, 0 or 1 for <, = or >
-     Norm          calculate the norm (number of elements) of the set
-     Min           return the minimum of the set ( min{} = +infinity )
-     Max           return the maximum of the set ( max{} = -infinity )
-     Copy          copy one set to another
+For this, you can use the file "lib_set.o" exactly as it is produced when
+building this module! It contains no references to Perl, and it doesn't need
+any Perl header files in order to compile. (It only needs "lib_defs.h" and
+some system header files)
+
+Note however that this C library does not perform any bounds checking
+whatsoever! (This is left to your application!)
+
+(See the corresponding explanation in the file "lib_set.c" for more details
+and the file "IntegerFast.xs" for an example of how this can be done!)
+
+In this package, all bounds and type checking (which should be absolutely
+fool-proof, by the way!) is done in the XS subroutines.
 
 For more details, see the Set::IntegerFast(3) man page!
+
+
+Preliminary steps for use with Perl prior to version 5.002:
+-----------------------------------------------------------
+
+Edit the file "Makefile.PL" in this package and change the line
+
+    'VERSION_FROM'	=> 'IntegerFast.pm',
+to
+    'VERSION'		=> '2.0',
+
+Then edit the file "IntegerFast.pm" and change the line
+
+    bootstrap Set::IntegerFast $VERSION;
+to
+    bootstrap Set::IntegerFast;
+
+Finally, edit the file "IntegerFast.xs" and delete the line
+
+    PROTOTYPES: DISABLE
 
 
 How to install it:
@@ -113,9 +193,9 @@ Please unpack and build this package OUTSIDE the Perl source and distribution
 tree!!
 
  1) Change directory to the directory that has been created by unpacking this
-    package ("Set-IntegerFast-1.1").
+    package ("Set-IntegerFast-2.0/").
 
- 2) Type "perl5 Makefile.PL" (or whatever the name and path of your Perl 5
+ 2) Type "perl Makefile.PL" (or whatever the name and path of your Perl 5
     binary is).
 
     This will create a "Makefile" with the appropriate parameters for your
@@ -134,10 +214,24 @@ tree!!
     (Note, however, that I didn't test this since my system does support
     dynamic linking.)
 
-    Should you encounter any compiler warnings or errors (like the redefini-
-    tion of certain types already defined by your system), please contact
-    me by mail at 'sb@sdm.de', sending me your compiler output (both STDOUT
+    Should you encounter any compiler warnings or errors (like the redefi-
+    nition of certain types already defined by your system), please contact
+    me by mail at <sb@sdm.de>, sending me your compiler output (both STDOUT
     and STDERR). Thank you!
+
+    ======================================================================
+    Be aware that you need a C compiler which supports ANSI C in order to
+    successfully compile this package!
+    ======================================================================
+
+    Also note that problems may arise with the c89 compiler of HP, although
+    it allegedly supports ANSI C!
+
+    I recommend the GNU gcc compiler, which is available for free on the
+    Internet.
+
+    (HP users are strongly recommended to install the GNU assembler GAS
+    first before installing GNU gcc)
 
     Should you get the error messages
 
@@ -145,13 +239,13 @@ tree!!
     IntegerFast.c: 16: Unable to find include file 'perl.h'.
     IntegerFast.c: 17: Unable to find include file 'XSUB.h'.
 
-    then edit the file Makefile.PL and change the line
+    then edit the file "Makefile.PL" and change the line
 
-    'INC'	=> '',     # e.g., '-I/opt/pkg/perl5.001m/dist' 
+    'INC'	=> '',     # e.g., '-I/opt/pkg/perl5.003/dist' 
 
     in such a way that it points to your Perl 5 distribution tree, e.g.,
 
-    'INC'       => '-I/usr/ctr/dlt/private/perl/perl5.001m',
+    'INC'	=> '-I/usr/ctr/dlt/private/perl/perl5.003',
 
     or the like, and start over with the generation of the Makefile at 2).
 
@@ -159,41 +253,30 @@ tree!!
 
     The output should look somewhat like this:
 
-    PERL_DL_NONLAZY=1 /opt/bin/perl5 -I./blib/sun4-sunos -I./blib
-    -I/opt/lib/perl5.001m/sun4-sunos -I/opt/lib/perl5.001m -e
-    'use Test::Harness qw(&runtests $verbose); $verbose=0; runtests @ARGV;'
-    t/*.t
-    t/f000..............ok
-    t/f001..............ok
-    t/f002..............ok
-    t/f003..............ok
-    t/f004..............ok
-    t/f005..............ok
-    t/f006..............ok
-    t/f007..............ok
-    t/f008..............ok
-    t/f009..............ok
-    t/f010..............ok
+    PERL_DL_NONLAZY=1 /usr/bin/perl -I./blib/arch -I./blib/lib
+    -I/e/www/sw/pkg/perl/lib/i386-freebsd/5.003 -I/e/www/sw/pkg/perl/lib
+    -e 'use Test::Harness qw(&runtests $verbose); $verbose=0;
+    runtests @ARGV;' t/*.t
+    t/00____version.....ok
+    t/01________new.....ok
+    t/02____destroy.....ok
+    t/03_operations.....ok
+    t/04__functions.....ok
+    t/05_____primes.....ok
+    t/06__inclusion.....ok
+    t/07___lexorder.....ok
+    t/08_____resize.....ok
+    t/09_parameters.....ok
     All tests successful.
-    Files=11,  Tests=2506,  6 secs ( 4.68 cusr  0.75 csys =  5.43 cpu)
+    Files=10,  Tests=3012,  2 secs ( 3.62 cusr  0.50 csys =  4.12 cpu)
 
- 5) You will have to manually copy the man page "Set::IntegerFast.3" to your
-    man directory, probably one of "/usr/lang/man/cat3", "/usr/local/man/cat3",
-    "/usr/man/cat3", or the like (consult your MANPATH environment variable).
+    (Note that these tests test the "Set::IntegerFast" module ONLY; the
+    "Set::IntegerRange" module is currently NOT tested because of its
+    simplicity!)
 
-    (The current version of MakeMaker doesn't yet support the copying of the
-    man pages to their destination directory.)
-
-    If, however, you have installed a newer version of Makemaker which
-    supports installing of the man pages, you can skip this step as it's
-    automatically taken care of by the "make install" in the next step.
-
-    You can also first try "make install", and if it doesn't install the
-    man page, copy it manually.
-
- 6) Finally, type "make install".
+ 5) At last, type "make install".
         
- 7) Now you may try to run the "demo". Start it with "perl5 demo" (or what-
+ 6) Now you can try to run the "demo". Start it with "perl demo" (or what-
     ever the name and path of your Perl 5 binary is).
 
     It will ask you to enter a number which will serve as an upper limit for
@@ -204,7 +287,7 @@ tree!!
     up to one million takes about 1 minute 30 seconds to 2 minutes, depending
     on the load.
 
- 8) Enjoy!
+ 7) Enjoy!
 
 
 Version history:
@@ -212,25 +295,80 @@ Version history:
 
 Version 1.0 was the initial release.
 
-Version 1.1 offers a "Resize" method which allows you to change the size of
-a set while retaining the information it contains (as much of it as possible)
-and fixes some errors in the documentation (the methods Create, Empty, Fill
-and Copy had complexity n/8 and not n/b, of course!) by changing the imple-
-mentation of these methods (so that they now have complexity n/b).
+Version 1.1 offered a new "Resize" method which allows you to change the
+size of an existing set while keeping the information it contains (as much
+of it as will fit into the new set) and fixed some errors in the documen-
+tation (the methods Create, Empty, Fill and Copy had complexity n/8 and not
+n/b) by changing the implementation of these methods (so that they now have
+complexity n/b).
 
-The interface of the C routines is more consistent now (the pointer to the
-set is now always the first argument) and a few more paragraphs have been
+The interface of the C routines was made more consistent (the pointer to
+the set is now always the first argument) and a few more paragraphs were
 added to the documentation.
 
 The method "ExclusiveOr" (which calculates the symmetric difference X =
-(Y + Z) \ (Y * Z) of two sets Y and Z) has also been added in this version.
+(Y + Z) \ (Y * Z) of two sets Y and Z) was also added in this version.
+
+Version 1.1 broke with the next new release of Perl, version 5.002 (problems
+with the "Destroy" method and "bad free() ignored" warnings that caused some
+of the tests in "make test" to fail).
+
+Version 2.0 fixes the problem that appeared with Perl 5.002 in version 1.1.
+
+As a matter of fact, version 2.0 is a complete rewrite of the XSUB part of
+this package. The C part of the package ("lib_set.c") has also been slightly
+changed; the functions "lexorder" and "Compare" are handled more efficiently
+now (complexity 1..n/b instead of 1..n/8). Parameter types have been adjusted
+to reflect their nature as those integers that the sets of this package are
+all about. The documentation has been completely rewritten and ported to POD
+format.
+
+A new module (in fact a "wrapper" module for the "Set::IntegerFast" module)
+named "Set::IntegerRange" has been added in version 2.0 of this package which
+allows you to use sets of integers in an *arbitrary* interval (instead of from
+zero to some positive integer).
+
+
+Known bugs:
+-----------
+
+Beware that calling the set object constructor method with the explicit
+name of a non-existing class, like in
+
+$set = Set::IntegerFast::new('nonsense',$elements);
+
+will produce CORE DUMPS as soon as Perl tries to DESTROY the object so
+created IF (and only if) SUBCLASSING IS ENABLED!
+
+This can only be prevented if there is a "package nonsense;" declaration
+somewhere in the program which is in effect when Perl tries or is forced
+to destroy the object!
+
+Example:
+
+package main;
+$set = Set::IntegerFast::new('nonsense',$elements);
+package nonsense;
+@ISA = qw(Set::IntegerFast);
+$main::set = 0;
+package main;
+
+# rest of your program...
 
 
 Thanks:
 -------
 
-Many thanks to Jarkko Hietaniemi for his suggestions while I was developing
-this package!
+Many thanks to Andreas Koenig <upload@franz.ww.tu-berlin.de> for his
+efforts as upload-manager for the CPAN, his patience, and lots of good
+advice and suggestions! Thank you for doing such a tremendous (and time-
+consuming) job!!
+
+Also many thanks to David Jenkins <jenkins@sdm.de> for reviewing the
+first version of this README file and the man page.
+
+Many thanks to Jarkko Hietaniemi <Jarkko.Hietaniemi@hut.fi> for his
+suggestions while I was developing the first release of this package!
 
 Many thanks also to the people of the perl5-porters <perl5-porters@nicoh.com>
 mailing list, specifically:
@@ -247,21 +385,44 @@ for discussing and clarifying the naming and other issues of this package!
 
 Also many thanks to David Thompson <dlt@dewey.csun.edu> for reporting a
 problem he encountered concerning the inclusion of the Perl distribution
-into the search path for h-files together with his solution. (That's the
-most pleasant kind of problem report, of course! ;-) )
+("Unable to find include file ...") and for suggesting a solution for this
+problem. (That's the most pleasant kind of problem report, of course! ;-) )
+
+Many thanks to Rob Johnson <rjohnson@apple.com> for an improved algorithm
+for computing binomials with always integer intermediate results (and
+numbers never getting too big)!
+
+Thanks to Banchong Harangsri <bjtong@cse.unsw.edu.au> for reporting the
+problem of the version 1.1 of this module with Perl 5.002!
+
+Special thanks to Dean Roehrich <roehrich@cray.com> for his assistance
+in trying to find the cause of and a remedy for the above problem!
 
 
 Final note:
 -----------
 
-Please report any comments, problems, suggestions, findings, complaints,
-questions, insights, compliments or donations ;-) and so on to:
+If you need any assistance or have any comments, problems, suggestions,
+findings, complaints, questions, insights, compliments or donations to give ;-)
+then please don't hesitate to send me a mail:
 
 sb@sdm.de (Steffen Beyer)
 
-Yours sincerely,
+In fact I'd be glad if you could drop me an e-mail when you are using this
+package, so I can see how much interest exists in it and how much time is
+reasonable to spend on its further development.
+
+Therefore, I would also be glad to know what you liked and what you disliked
+about this package!
+
+And I would also be very interested to know what your application is in
+which you found this package to be useful, just to get an idea what can
+all be done with it and in which direction it should be developed further.
+
+Many thanks in advance!!
+
+With kind regards,
 --
-Steffen Beyer
-mailto:sb@sdm.de        |s  |d &|m  |  software design & management GmbH&Co.KG
-phone: +49 89 63812-244 |   |   |   |  Thomas-Dehler-Str. 27
-fax:   +49 89 63812-150 |   |   |   |  81737 Munich, Germany.
+    |s  |d &|m  |    Steffen Beyer <sb@sdm.de> (+49 89) 63812-244 fax -150
+    |   |   |   |    software design & management GmbH & Co. KG
+    |   |   |   |    Thomas-Dehler-Str. 27, 81737 Munich, Germany.

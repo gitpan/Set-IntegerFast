@@ -1,6 +1,6 @@
 /*
-  Copyright (c) 1995 Steffen Beyer. All rights reserved.
-  This program is free software; you can redistribute it and/or
+  Copyright (c) 1996 Steffen Beyer. All rights reserved.
+  This package is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
 
@@ -11,52 +11,107 @@
 #include "lib_defs.h"
 #include "lib_set.h"
 
-/*
-static word loop_pointer;
-static word loop_mask;
-*/
+
+typedef   SV *Class_Type;
+typedef   SV *Set_Object;
+typedef   SV *Set_Handle;
+typedef unit *Set_Address;
+
+
+static  char *Class_Name = "Set::IntegerFast";
+
+
+#ifdef  DEBUG_SET_OBJECT
+
+#define DEBUG_CONSTRUCTOR(elem,ref,hdl,adr) fprintf(stderr, \
+"Set::IntegerFast::new(%u): ref=0x%.8X hdl=0x%.8X adr=0x%.8X\n", elem, \
+(N_long) ref, (N_long) hdl, (N_long) adr);
+
+#define DEBUG_DESTRUCTOR(ref,hdl,adr) fprintf(stderr, \
+"Set::IntegerFast::DESTROY(): ref=0x%.8X hdl=0x%.8X adr=0x%.8X\n", \
+(N_long) ref, (N_long) hdl, (N_long) adr);
+
+#else
+
+#define DEBUG_CONSTRUCTOR(elem,ref,hdl,adr) ;
+#define DEBUG_DESTRUCTOR(ref,hdl,adr) ;
+
+#endif
+
+
+#ifdef  ENABLE_SUBCLASSING
+
+#define OVERRIDE_CLASS(class,type,name) ;
+
+#define SET_OBJECT_CHECK(ref,hdl,adr,nam) \
+    ( ref &&                              \
+    SvROK(ref) &&                         \
+    (hdl = (Set_Handle)SvRV(ref)) &&      \
+    SvOBJECT(hdl) &&                      \
+    (SvTYPE(hdl) == SVt_PVMG) &&          \
+    SvREADONLY(hdl) &&                    \
+    (adr = (Set_Address)SvIV(hdl)) )
+
+#else
+
+#define OVERRIDE_CLASS(class,type,name) class = (type) name;
+
+#define SET_OBJECT_CHECK(ref,hdl,adr,nam) \
+    ( ref &&                              \
+    SvROK(ref) &&                         \
+    (hdl = (Set_Handle)SvRV(ref)) &&      \
+    SvOBJECT(hdl) &&                      \
+    (SvTYPE(hdl) == SVt_PVMG) &&          \
+    (strEQ(HvNAME(SvSTASH(hdl)),nam)) &&  \
+    SvREADONLY(hdl) &&                    \
+    (adr = (Set_Address)SvIV(hdl)) )
+
+#endif
 
 
 MODULE = Set::IntegerFast		PACKAGE = Set::IntegerFast
 
 
+PROTOTYPES: DISABLE
+
+
 BOOT:
+{
+    unit rc;
+    if (rc = Set_Auto_config())
     {
-        word rc;
-        if (rc = Set_Auto_config())
+        fprintf(stderr,
+"Set::IntegerFast failed to auto-configure:\n");
+        switch (rc)
         {
-            fprintf(stderr,
-"'Set::IntegerFast' failed to auto-configure:\n");
-            switch (rc)
-            {
-                case 1:
-                    fprintf(stderr,
-"The types 'word' and 'size_t' differ in size!\n");
-                    break;
-                case 2:
-                    fprintf(stderr,
+            case 1:
+                fprintf(stderr,
+"The types 'unit' and 'size_t' differ in size!\n");
+                break;
+            case 2:
+                fprintf(stderr,
 "The number of bits of a machine word is not a power of 2!\n");
-                    break;
-                case 3:
-                    fprintf(stderr,
+                break;
+            case 3:
+                fprintf(stderr,
 "The number of bits of a machine word is less than 8!\n");
-                    break;
-                case 4:
-                    fprintf(stderr,
-"The number of bits of a machine word and sizeof(word) are inconsistent!\n");
-                    break;
-                case 5:
-                    fprintf(stderr,
+                break;
+            case 4:
+                fprintf(stderr,
+"The number of bits of a machine word and sizeof(unit) are inconsistent!\n");
+                break;
+            case 5:
+                fprintf(stderr,
 "Unable to allocate memory with malloc()!\n");
-                    break;
-                default:
-                    fprintf(stderr,
+                break;
+            default:
+                fprintf(stderr,
 "Unforeseen error!\n");
-                    break;
-            }
-            exit(rc);
+                break;
         }
+        exit(rc);
     }
+}
 
 
 void
@@ -64,326 +119,519 @@ Version()
 PPCODE:
 {
     EXTEND(sp,1);
-    PUSHs(sv_2mortal(newSVpv("1.1",0)));
+    PUSHs(sv_2mortal(newSVpv("2.0",0)));
 }
-
-
-#void
-#Bit0(addr,index,bitno)
-#wordptr	addr
-#word	index
-#word	bitno
-
-
-#void
-#Bit1(addr,index,bitno)
-#wordptr	addr
-#word	index
-#word	bitno
-
-
-#void
-#BitX(addr,index,bitno)
-#wordptr	addr
-#word	index
-#word	bitno
-
-
-#boolean
-#Bit(addr,index,bitno)
-#wordptr	addr
-#word	index
-#word	bitno
 
 
 MODULE = Set::IntegerFast		PACKAGE = Set::IntegerFast		PREFIX = Set_
 
 
-#word
-#Set_Size(elements)
-#word	elements
-
-
-#word
-#Set_Mask(elements)
-#word	elements
-
-
-wordptr
-Set_Create(elements)
-word	elements
-
-
 void
-Set_Destroy(addr)
-wordptr	addr
-CODE:
+Set_new(class,elements)
+Class_Type	class
+N_int	elements
+PPCODE:
 {
-    if (addr != NULL)
-        Set_Destroy(addr);
-    addr = NULL;
-}
-OUTPUT:
-addr
+    Set_Address address;
+    Set_Handle  handle;
+    Set_Object  reference;
 
-
-void
-Set_Resize(addr,elements)
-wordptr	addr
-word	elements
-CODE:
-{
-    addr = Set_Resize(addr,elements);
-}
-OUTPUT:
-addr
-
-
-void
-Set_Empty(addr)
-wordptr	addr
-
-
-void
-Set_Fill(addr)
-wordptr	addr
-
-
-void
-Set_Insert(addr,index)
-wordptr	addr
-word	index
-CODE:
-{
-    if (index >= *(addr-3))
-        croak("'Set::IntegerFast': index out of range");
-    else
-        Set_Insert(addr,index);
-}
-
-
-void
-Set_Delete(addr,index)
-wordptr	addr
-word	index
-CODE:
-{
-    if (index >= *(addr-3))
-        croak("'Set::IntegerFast': index out of range");
-    else
-        Set_Delete(addr,index);
-}
-
-
-boolean
-Set_in(addr,index)
-wordptr	addr
-word	index
-CODE:
-{
-    if (index >= *(addr-3))
-        croak("'Set::IntegerFast': index out of range");
-    else
-        RETVAL = Set_in(addr,index);
-}
-OUTPUT:
-RETVAL
-
-
-#void
-#Set_in_Init(index)
-#word	index
-#CODE:
-#{
-#    Set_in_Init(index,&loop_pointer,&loop_mask);
-#}
-
-
-#boolean
-#Set_in_up(addr)
-#wordptr	addr
-#CODE:
-#{
-#    RETVAL = Set_in_up(addr,&loop_pointer,&loop_mask);
-#}
-#OUTPUT:
-#RETVAL
-
-
-#boolean
-#Set_in_down(addr)
-#wordptr	addr
-#CODE:
-#{
-#    RETVAL = Set_in_down(addr,&loop_pointer,&loop_mask);
-#}
-#OUTPUT:
-#RETVAL
-
-
-void
-Set_Union(X,Y,Z)
-wordptr	X
-wordptr	Y
-wordptr	Z
-CODE:
-{
-    if ((*(X-3) != *(Y-3)) or (*(X-3) != *(Z-3)))
-        croak("'Set::IntegerFast': set size mismatch");
-    else
-        Set_Union(X,Y,Z);
-}
-
-
-void
-Set_Intersection(X,Y,Z)
-wordptr	X
-wordptr	Y
-wordptr	Z
-CODE:
-{
-    if ((*(X-3) != *(Y-3)) or (*(X-3) != *(Z-3)))
-        croak("'Set::IntegerFast': set size mismatch");
-    else
-        Set_Intersection(X,Y,Z);
-}
-
-
-void
-Set_Difference(X,Y,Z)
-wordptr	X
-wordptr	Y
-wordptr	Z
-CODE:
-{
-    if ((*(X-3) != *(Y-3)) or (*(X-3) != *(Z-3)))
-        croak("'Set::IntegerFast': set size mismatch");
-    else
-        Set_Difference(X,Y,Z);
-}
-
-
-void
-Set_ExclusiveOr(X,Y,Z)
-wordptr	X
-wordptr	Y
-wordptr	Z
-CODE:
-{
-    if ((*(X-3) != *(Y-3)) or (*(X-3) != *(Z-3)))
-        croak("'Set::IntegerFast': set size mismatch");
-    else
-        Set_ExclusiveOr(X,Y,Z);
-}
-
-
-void
-Set_Complement(X,Y)
-wordptr	X
-wordptr	Y
-CODE:
-{
-    if (*(X-3) != *(Y-3))
-        croak("'Set::IntegerFast': set size mismatch");
-    else
-        Set_Complement(X,Y);
-}
-
-
-boolean
-Set_equal(X,Y)
-wordptr	X
-wordptr	Y
-CODE:
-{
-    if (*(X-3) != *(Y-3))
-        croak("'Set::IntegerFast': set size mismatch");
-    else
-        RETVAL = Set_equal(X,Y);
-}
-OUTPUT:
-RETVAL
-
-
-boolean
-Set_inclusion(X,Y)
-wordptr	X
-wordptr	Y
-CODE:
-{
-    if (*(X-3) != *(Y-3))
-        croak("'Set::IntegerFast': set size mismatch");
-    else
-        RETVAL = Set_inclusion(X,Y);
-}
-OUTPUT:
-RETVAL
-
-
-boolean
-Set_lexorder(X,Y)
-wordptr	X
-wordptr	Y
-CODE:
-{
-    if (*(X-3) != *(Y-3))
-        croak("'Set::IntegerFast': set size mismatch");
-    else
-        RETVAL = Set_lexorder(X,Y);
-}
-OUTPUT:
-RETVAL
-
-
-int
-Set_Compare(X,Y)
-wordptr	X
-wordptr	Y
-CODE:
-{
-    if (*(X-3) != *(Y-3))
-        croak("'Set::IntegerFast': set size mismatch");
+    if ( class && SvROK(class) && (handle = (SV *)SvRV(class)) &&
+         SvOBJECT(handle) && (SvTYPE(handle) == SVt_PVMG) )
+    {
+        class = (Class_Type)HvNAME(SvSTASH(handle));
+    }
     else
     {
-        RETVAL = Set_Compare(X,Y);
-        if (RETVAL != 0)
+        if ( class && SvPOK(class) && SvCUR(class) )
         {
-            if (RETVAL > 0)
-                RETVAL =  1;
-            else
-                RETVAL = -1;
+            class = (Class_Type)SvPV(class,na);
+        }
+        else
+        {
+            croak("Set::IntegerFast::new(): error in first parameter (class name or reference)");
         }
     }
+
+    /* overrides input parameter unless ENABLE_SUBCLASSING is defined: */
+
+    OVERRIDE_CLASS(class,Class_Type,Class_Name)
+
+    address = Set_Create(elements);
+
+    if (address != NULL)
+    {
+        handle = sv_2mortal(newSViv((IV)address));
+        reference = sv_bless(sv_2mortal(newRV(handle)),gv_stashpv((char *)class,0));
+        SvREADONLY_on(handle);
+        PUSHs(reference);
+    }
+    else
+        PUSHs(&sv_undef);
+    DEBUG_CONSTRUCTOR(elements,reference,handle,address)
+}
+
+
+void
+Set_DESTROY(reference)
+Set_Object	reference
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        DEBUG_DESTRUCTOR(reference,handle,address)
+        Set_Destroy(address);
+        SvREADONLY_off(handle);
+        sv_setiv(handle,(IV)NULL);
+        SvREADONLY_on(handle);
+    }
+    else
+        croak("Set::IntegerFast::DESTROY(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Resize(reference,elements)
+Set_Object	reference
+N_int	elements
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        address = Set_Resize(address,elements);
+
+        SvREADONLY_off(handle);
+        sv_setiv(handle,(IV)address);
+        SvREADONLY_on(handle);
+    }
+    else
+        croak("Set::IntegerFast::Resize(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Empty(reference)
+Set_Object	reference
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        Set_Empty(address);
+    }
+    else
+        croak("Set::IntegerFast::Empty(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Fill(reference)
+Set_Object	reference
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        Set_Fill(address);
+    }
+    else
+        croak("Set::IntegerFast::Fill(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Insert(reference,index)
+Set_Object	reference
+N_int	index
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        if (index >= *(address-3))
+            croak("Set::IntegerFast::Insert(): index out of range");
+        else
+            Set_Insert(address,index);
+    }
+    else
+        croak("Set::IntegerFast::Insert(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Delete(reference,index)
+Set_Object	reference
+N_int	index
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        if (index >= *(address-3))
+            croak("Set::IntegerFast::Delete(): index out of range");
+        else
+            Set_Delete(address,index);
+    }
+    else
+        croak("Set::IntegerFast::Delete(): not a 'Set::IntegerFast' object reference");
+}
+
+
+boolean
+Set_in(reference,index)
+Set_Object	reference
+N_int	index
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        if (index >= *(address-3))
+            croak("Set::IntegerFast::in(): index out of range");
+        else
+            RETVAL = Set_in(address,index);
+    }
+    else
+        croak("Set::IntegerFast::in(): not a 'Set::IntegerFast' object reference");
 }
 OUTPUT:
 RETVAL
 
 
-word
-Set_Norm(addr)
-wordptr	addr
+N_int
+Set_Norm(reference)
+Set_Object	reference
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        RETVAL = Set_Norm(address);
+    }
+    else
+        croak("Set::IntegerFast::Norm(): not a 'Set::IntegerFast' object reference");
+}
+OUTPUT:
+RETVAL
 
 
-long
-Set_Min(addr)
-wordptr	addr
+Z_long
+Set_Min(reference)
+Set_Object	reference
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        RETVAL = Set_Min(address);
+    }
+    else
+        croak("Set::IntegerFast::Min(): not a 'Set::IntegerFast' object reference");
+}
+OUTPUT:
+RETVAL
 
 
-long
-Set_Max(addr)
-wordptr	addr
+Z_long
+Set_Max(reference)
+Set_Object	reference
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        RETVAL = Set_Max(address);
+    }
+    else
+        croak("Set::IntegerFast::Max(): not a 'Set::IntegerFast' object reference");
+}
+OUTPUT:
+RETVAL
 
 
 void
-Set_Copy(X,Y)
-wordptr	X
-wordptr	Y
+Set_Union(Xref,Yref,Zref)
+Set_Object	Xref
+Set_Object	Yref
+Set_Object	Zref
 CODE:
 {
-    if (*(X-3) != *(Y-3))
-        croak("'Set::IntegerFast': set size mismatch");
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+    Set_Handle  Zhdl;
+    Set_Address Zadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) &&
+         SET_OBJECT_CHECK(Zref,Zhdl,Zadr,Class_Name) )
+    {
+        if ((*(Xadr-3) != *(Yadr-3)) or (*(Xadr-3) != *(Zadr-3)))
+            croak("Set::IntegerFast::Union(): set size mismatch");
+        else
+            Set_Union(Xadr,Yadr,Zadr);
+    }
     else
-        Set_Copy(X,Y);
+        croak("Set::IntegerFast::Union(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Intersection(Xref,Yref,Zref)
+Set_Object	Xref
+Set_Object	Yref
+Set_Object	Zref
+CODE:
+{
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+    Set_Handle  Zhdl;
+    Set_Address Zadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) &&
+         SET_OBJECT_CHECK(Zref,Zhdl,Zadr,Class_Name) )
+    {
+        if ((*(Xadr-3) != *(Yadr-3)) or (*(Xadr-3) != *(Zadr-3)))
+            croak("Set::IntegerFast::Intersection(): set size mismatch");
+        else
+            Set_Intersection(Xadr,Yadr,Zadr);
+    }
+    else
+        croak("Set::IntegerFast::Intersection(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Difference(Xref,Yref,Zref)
+Set_Object	Xref
+Set_Object	Yref
+Set_Object	Zref
+CODE:
+{
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+    Set_Handle  Zhdl;
+    Set_Address Zadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) &&
+         SET_OBJECT_CHECK(Zref,Zhdl,Zadr,Class_Name) )
+    {
+        if ((*(Xadr-3) != *(Yadr-3)) or (*(Xadr-3) != *(Zadr-3)))
+            croak("Set::IntegerFast::Difference(): set size mismatch");
+        else
+            Set_Difference(Xadr,Yadr,Zadr);
+    }
+    else
+        croak("Set::IntegerFast::Difference(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_ExclusiveOr(Xref,Yref,Zref)
+Set_Object	Xref
+Set_Object	Yref
+Set_Object	Zref
+CODE:
+{
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+    Set_Handle  Zhdl;
+    Set_Address Zadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) &&
+         SET_OBJECT_CHECK(Zref,Zhdl,Zadr,Class_Name) )
+    {
+        if ((*(Xadr-3) != *(Yadr-3)) or (*(Xadr-3) != *(Zadr-3)))
+            croak("Set::IntegerFast::ExclusiveOr(): set size mismatch");
+        else
+            Set_ExclusiveOr(Xadr,Yadr,Zadr);
+    }
+    else
+        croak("Set::IntegerFast::ExclusiveOr(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Complement(Xref,Yref)
+Set_Object	Xref
+Set_Object	Yref
+CODE:
+{
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) )
+    {
+        if (*(Xadr-3) != *(Yadr-3))
+            croak("Set::IntegerFast::Complement(): set size mismatch");
+        else
+            Set_Complement(Xadr,Yadr);
+    }
+    else
+        croak("Set::IntegerFast::Complement(): not a 'Set::IntegerFast' object reference");
+}
+
+
+boolean
+Set_equal(Xref,Yref)
+Set_Object	Xref
+Set_Object	Yref
+CODE:
+{
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) )
+    {
+        if (*(Xadr-3) != *(Yadr-3))
+            croak("Set::IntegerFast::equal(): set size mismatch");
+        else
+            RETVAL = Set_equal(Xadr,Yadr);
+    }
+    else
+        croak("Set::IntegerFast::equal(): not a 'Set::IntegerFast' object reference");
+}
+OUTPUT:
+RETVAL
+
+
+boolean
+Set_inclusion(Xref,Yref)
+Set_Object	Xref
+Set_Object	Yref
+CODE:
+{
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) )
+    {
+        if (*(Xadr-3) != *(Yadr-3))
+            croak("Set::IntegerFast::inclusion(): set size mismatch");
+        else
+            RETVAL = Set_inclusion(Xadr,Yadr);
+    }
+    else
+        croak("Set::IntegerFast::inclusion(): not a 'Set::IntegerFast' object reference");
+}
+OUTPUT:
+RETVAL
+
+
+boolean
+Set_lexorder(Xref,Yref)
+Set_Object	Xref
+Set_Object	Yref
+CODE:
+{
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) )
+    {
+        if (*(Xadr-3) != *(Yadr-3))
+            croak("Set::IntegerFast::lexorder(): set size mismatch");
+        else
+            RETVAL = Set_lexorder(Xadr,Yadr);
+    }
+    else
+        croak("Set::IntegerFast::lexorder(): not a 'Set::IntegerFast' object reference");
+}
+OUTPUT:
+RETVAL
+
+
+Z_int
+Set_Compare(Xref,Yref)
+Set_Object	Xref
+Set_Object	Yref
+CODE:
+{
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) )
+    {
+        if (*(Xadr-3) != *(Yadr-3))
+            croak("Set::IntegerFast::Compare(): set size mismatch");
+        else
+            RETVAL = Set_Compare(Xadr,Yadr);
+    }
+    else
+        croak("Set::IntegerFast::Compare(): not a 'Set::IntegerFast' object reference");
+}
+OUTPUT:
+RETVAL
+
+
+void
+Set_Copy(Xref,Yref)
+Set_Object	Xref
+Set_Object	Yref
+CODE:
+{
+    Set_Handle  Xhdl;
+    Set_Address Xadr;
+    Set_Handle  Yhdl;
+    Set_Address Yadr;
+
+    if ( SET_OBJECT_CHECK(Xref,Xhdl,Xadr,Class_Name) &&
+         SET_OBJECT_CHECK(Yref,Yhdl,Yadr,Class_Name) )
+    {
+        if (*(Xadr-3) != *(Yadr-3))
+            croak("Set::IntegerFast::Copy(): set size mismatch");
+        else
+            Set_Copy(Xadr,Yadr);
+    }
+    else
+        croak("Set::IntegerFast::Copy(): not a 'Set::IntegerFast' object reference");
 }
 
 

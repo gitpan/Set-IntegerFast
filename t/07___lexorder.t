@@ -12,10 +12,10 @@ use Set::IntegerFast;
 
 print "1..64\n";
 
-$set0 = Set::IntegerFast::Create(1000);
-$set1 = Set::IntegerFast::Create(1000);
-$set2 = Set::IntegerFast::Create(1000);
-$set3 = Set::IntegerFast::Create(1000);
+$set0 = new Set::IntegerFast(65536);
+$set1 = new Set::IntegerFast(65536);
+$set2 = new Set::IntegerFast(65536);
+$set3 = new Set::IntegerFast(65536);
 
 $set1->Insert(1);
 $set2->Insert(2);
@@ -121,15 +121,15 @@ if ($set3->Compare($set3) == 0)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
-$set0->Empty;
-$set1->Empty;
-$set2->Empty;
-$set3->Empty;
+$set0->Empty();
+$set1->Empty();
+$set2->Empty();
+$set3->Empty();
 
-$set1->Insert(512);
-$set2->Insert(256);
-$set3->Insert(256);
-$set3->Insert(512);
+$set1->Insert(1);
+$set2->Insert(32768);
+$set3->Insert(1);
+$set3->Insert(32768);
 
 if ($set0->lexorder($set0))
 {print "ok $n\n";} else {print "not ok $n\n";}
@@ -228,9 +228,5 @@ $n++;
 if ($set3->Compare($set3) == 0)
 {print "ok $n\n";} else {print "not ok $n\n";}
 
-$set0->Destroy;
-$set1->Destroy;
-$set2->Destroy;
-$set3->Destroy;
-
 __END__
+

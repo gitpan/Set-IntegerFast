@@ -15,70 +15,74 @@
 
 /*      automatic self-configuring routine: */
 
-word    Set_Auto_config(void);              /* 0 = ok, 1..5 = error */
+unit    Set_Auto_config(void);              /* 0 = ok, 1..5 = error */
 
 /*      low-level routines: */
 
-void    Bit0(wordptr addr, word index, word bitno);     /* clear bit */
-void    Bit1(wordptr addr, word index, word bitno);     /* set bit */
-void    BitX(wordptr addr, word index, word bitno);     /* flip bit */
-boolean Bit (wordptr addr, word index, word bitno);     /* return bit */
+void    Bit0(unitptr addr, unit index, unit bitno);         /* clear bit  */
+void    Bit1(unitptr addr, unit index, unit bitno);         /* set bit    */
+void    BitX(unitptr addr, unit index, unit bitno);         /* flip bit   */
+boolean Bit (unitptr addr, unit index, unit bitno);         /* return bit */
 
 /*      auxiliary routines: */
 
-word    Set_Size(word elements);            /* calc set size (# of words) */
-word    Set_Mask(word elements);            /* calc set mask (unused bits) */
+unit    Set_Size(N_int elements);           /* calc set size (# of units)  */
+unit    Set_Mask(N_int elements);           /* calc set mask (unused bits) */
 
 /*      object creation/destruction/initialization routines: */
 
-wordptr Set_Create (word elements);                     /* malloc */
-void    Set_Destroy(wordptr addr);                      /* free */
-wordptr Set_Resize (wordptr oldaddr, word elements);    /* realloc */
-void    Set_Empty  (wordptr addr);                      /* X = {}   clr all */
-void    Set_Fill   (wordptr addr);                      /* X = ~{}  set all */
+unitptr Set_Create (N_int elements);                        /* malloc  */
+void    Set_Destroy(unitptr addr);                          /* free    */
+unitptr Set_Resize (unitptr oldaddr, N_int elements);       /* realloc */
+void    Set_Empty  (unitptr addr);                          /* X = {}  */
+void    Set_Fill   (unitptr addr);                          /* X = ~{} */
 
 /*      set operations on elements: */
 
-void    Set_Insert(wordptr addr, word index);               /* X = X + {x} */
-void    Set_Delete(wordptr addr, word index);               /* X = X \ {x} */
+void    Set_Insert(unitptr addr, N_int index);              /* X = X + {x} */
+void    Set_Delete(unitptr addr, N_int index);              /* X = X \ {x} */
 
 /*      set test functions on elements: */
 
-boolean Set_in    (wordptr addr, word index);               /* {x} in X ? */
+boolean Set_in    (unitptr addr, N_int index);              /* {x} in X ?   */
 
-void    Set_in_Init  (word index, word *pos, word *mask);   /* prepare test loop */
-boolean Set_in_up  (wordptr addr, word *pos, word *mask);   /* {x++} in X ? */
-boolean Set_in_down(wordptr addr, word *pos, word *mask);   /* {x--} in X ? */
-
-/*      set operations on whole sets: */
-
-void    Set_Union       (wordptr X, wordptr Y, wordptr Z);  /* X = Y + Z */
-void    Set_Intersection(wordptr X, wordptr Y, wordptr Z);  /* X = Y * Z */
-void    Set_Difference  (wordptr X, wordptr Y, wordptr Z);  /* X = Y \ Z */
-void    Set_ExclusiveOr (wordptr X, wordptr Y, wordptr Z);  /* X=(Y+Z)\(Y*Z) */
-void    Set_Complement  (wordptr X, wordptr Y);             /* X = ~Y */
-
-/*      set test functions on whole sets: */
-
-boolean Set_equal    (wordptr X, wordptr Y);                /* X == Y ? */
-boolean Set_inclusion(wordptr X, wordptr Y);                /* X in Y ? */
-boolean Set_lexorder (wordptr X, wordptr Y);                /* X <= Y ? */
-int     Set_Compare  (wordptr X, wordptr Y);                /* X <,=,> Y ? */
+void    Set_in_Init (N_int index, unit *pos, unit *mask);   /* init. loop   */
+boolean Set_in_up  (unitptr addr, unit *pos, unit *mask);   /* {x++} in X ? */
+boolean Set_in_down(unitptr addr, unit *pos, unit *mask);   /* {x--} in X ? */
 
 /*      set functions: */
 
-word    Set_Norm(wordptr addr);                             /* = | X | */
-long    Set_Min (wordptr addr);                             /* = min X */
-long    Set_Max (wordptr addr);                             /* = max X */
+N_int   Set_Norm(unitptr addr);                             /* = | X | */
+Z_long  Set_Min (unitptr addr);                             /* = min X */
+Z_long  Set_Max (unitptr addr);                             /* = max X */
+
+/*      set operations on whole sets: */
+
+void    Set_Union       (unitptr X, unitptr Y, unitptr Z);  /* X = Y + Z     */
+void    Set_Intersection(unitptr X, unitptr Y, unitptr Z);  /* X = Y * Z     */
+void    Set_Difference  (unitptr X, unitptr Y, unitptr Z);  /* X = Y \ Z     */
+void    Set_ExclusiveOr (unitptr X, unitptr Y, unitptr Z);  /* X=(Y+Z)\(Y*Z) */
+void    Set_Complement  (unitptr X, unitptr Y);             /* X = ~Y        */
+
+/*      set test functions on whole sets: */
+
+boolean Set_equal    (unitptr X, unitptr Y);                /* X == Y ?    */
+boolean Set_inclusion(unitptr X, unitptr Y);                /* X in Y ?    */
+boolean Set_lexorder (unitptr X, unitptr Y);                /* X <= Y ?    */
+Z_int   Set_Compare  (unitptr X, unitptr Y);                /* X <,=,> Y ? */
 
 /*      set copy: */
 
-void    Set_Copy(wordptr X, wordptr Y);                     /* X = Y */
+void    Set_Copy(unitptr X, unitptr Y);                     /* X = Y */
 
 /*
 // The "mask" that is used in various functions throughout this package avoids
 // problems that may arise when the number of elements used in a set is not a
 // multiple of 16 (or whatever the size of a machine word is on your system).
+//
+// (Note that in this program, the type name "unit" is used instead of "word"
+// in order to avoid possible name conflicts with any system header files on
+// other machines!)
 //
 // In these cases, comparisons between sets would fail to produce the expected
 // results if in one set the unused bits were set, while they were cleared in
@@ -86,18 +90,18 @@ void    Set_Copy(wordptr X, wordptr Y);                     /* X = Y */
 // this package using this "mask".
 //
 // If the number of elements in a set is, say, 500, you need to define a
-// contiguous block of memory with 32 words (if a word is worth 16 bits)
-// to store any such set, or
+// contiguous block of memory with 32 units (if a unit (= machine word) is
+// worth 16 bits) to store any such set, or
 //
-//                          word your_set[32];
+//                          unit your_set[32];
 //
-// 32 words contain a total of 512 bits, which means (since only one bit
+// 32 units contain a total of 512 bits, which means (since only one bit
 // is needed for each element to flag its presence or absence in the set)
 // that 12 bits remain unused.
 //
-// Since element #0 corresponds to bit #0 in word #0 of your_set, and
-// element 499 corresponds to bit #3 in word #31, the 12 most significant
-// bits of word #31 remain unused.
+// Since element #0 corresponds to bit #0 in unit #0 of your_set, and
+// element 499 corresponds to bit #3 in unit #31, the 12 most significant
+// bits of unit #31 remain unused.
 //
 // Therefore, the mask word should have the 12 most significant bits cleared
 // while the remaining lower bits remain set; in the case of our example,
@@ -122,11 +126,14 @@ void    Set_Copy(wordptr X, wordptr Y);                     /* X = Y */
 // WARNING:  It is your, the user's responsibility to make sure that all
 //           indices are within the appropriate range for any given set!
 //           No bounds checking is performed by the functions of this package!
-//           If you don't, you may blow up your system or receive "segmentation
+//           If you don't, you may get core dumps and receive "segmentation
 //           violation" errors. To do bounds checking more easily, define
 //           ENABLE_BOUNDS_CHECKING at the top of the file "lib_set.c".
-//           An index is invalid for any set (given by its pointer "addr")
-//           if it is greater than or equal to *(addr-3) (or less than zero).
+//           Then check incoming indices as follows: An index is invalid
+//           for any set (given by its pointer "addr") if it is greater
+//           than or equal to *(addr-3) (or if it is less than zero).
+//           Note that you don't need to check for negative indices, though,
+//           because the type used for indices in this package is UNSIGNED.
 //
 // WARNING:  You shouldn't perform any set operations with sets of different
 //           sizes unless you know exactly what you're doing. If the resulting
@@ -141,11 +148,11 @@ void    Set_Copy(wordptr X, wordptr Y);                     /* X = Y */
 //
 //           Result:                    Meaning:
 //
-//              1      The types 'word' and 'size_t' differ in size
+//              1      The types 'unit' and 'size_t' differ in size
 //              2      The number of bits of a machine word is not a power of 2
 //              3      The number of bits of a machine word is less than 8
 //                     (This would constitute a violation of ANSI C standards)
-//              4      The number of bits in a word and sizeof(word)*8 differ
+//              4      The number of bits in a word and sizeof(unit)*8 differ
 //              5      The attempt to allocate memory with malloc() failed
 */
 /**************************************/
@@ -161,7 +168,7 @@ void    Set_Copy(wordptr X, wordptr Y);                     /* X = Y */
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     16.12.95              */
+/* MODIFIED     30.11.96              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/

@@ -26,9 +26,9 @@ else
     print "\nRunning in batch mode - using $limit as upper limit.\n\n";
 }
 
-$set = Set::IntegerFast::Create($limit+1);
+$set = new Set::IntegerFast($limit+1);
 
-$set->Fill;
+$set->Fill();
 
 $set->Delete(0);
 $set->Delete(1);
@@ -54,9 +54,9 @@ $stop = time;
 
 &print_elapsed_time;
 
-$min = $set->Min;
-$max = $set->Max;
-$norm = $set->Norm;
+$min = $set->Min();
+$max = $set->Max();
+$norm = $set->Norm();
 
 print "Found $norm prime numbers in the range [2..$limit]:\n\n";
 
@@ -69,8 +69,6 @@ for ( $i = $min, $j = 0; $i <= $max; $i++ )
 }
 
 print "\n";
-
-$set->Destroy;
 
 exit;
 
@@ -103,3 +101,4 @@ sub print_elapsed_time
 }
 
 __END__
+

@@ -10,67 +10,51 @@
 /* INTERFACE                          */
 /**************************************/
 
-typedef  unsigned   char    byte;
-typedef  unsigned   int     word;
-typedef  unsigned   long    longword;
-typedef  unsigned   short   shortword;
+/* Note: weird names are used here in order to avoid name conflicts! */
 
-typedef  unsigned   char    isochar;  /* ISO-Latin-1 is an 8-bit code... */
+typedef  unsigned   char    base;
 
-typedef  unsigned   char    N_char;   /* natural numbers */
-typedef  unsigned   int     N_int;    /* N = { 0, 1, 2, 3, ... } */
+/* = a BYTE, the BASE for everything (mnemonic: also starts with a "b") */
+
+typedef  unsigned   int     unit;
+
+/* = a machine WORD, the basic UNIT (mnemonic: unit is an anagram of uint!) */
+
+typedef  unsigned   long    longunit;
+typedef  unsigned   short   shortunit;
+
+typedef  unsigned   char    N_char;
+typedef  unsigned   int     N_int;
 typedef  unsigned   long    N_long;
 typedef  unsigned   short   N_short;
 
-typedef  signed     char    Z_char;   /* whole numbers */
-typedef  signed     int     Z_int;    /* Z = { 0, -1, 1, -2, 2, -3, 3, ... } */
+/* mnemonic 1: the natural numbers, N = { 0, 1, 2, 3, ... } */
+/* mnemonic 2: Nnnn = u_N_signed, _N_ot signed */
+
+typedef  signed     char    Z_char;
+typedef  signed     int     Z_int;
 typedef  signed     long    Z_long;
 typedef  signed     short   Z_short;
 
+/* mnemonic 1: the whole numbers, Z = { 0, -1, 1, -2, 2, -3, 3, ... } */
+/* mnemonic 2: Zzzz = Ssss_igned */
+
 typedef  void               *voidptr;
-typedef  byte               *byteptr;
-typedef  word               *wordptr;
-typedef  longword           *longwordptr;
-typedef  shortword          *shortwordptr;
 
-typedef  isochar            *isocharptr;
+typedef  base               *baseptr;
+typedef  unit               *unitptr;
+typedef  longunit           *longunitptr;
+typedef  shortunit          *shortunitptr;
 
-#ifdef EXTENDED_LIB_DEFINITIONS
+typedef  unsigned   char    *N_charptr;
+typedef  unsigned   int     *N_intptr;
+typedef  unsigned   long    *N_longptr;
+typedef  unsigned   short   *N_shortptr;
 
-typedef             struct
-{
-    byte        l;
-    byte        h;
-}                   twobytes;
-
-typedef             struct
-{
-    byte        a;
-    byte        b;
-    byte        c;
-    byte        d;
-}                   fourbytes;
-
-typedef             struct
-{
-    word        l;
-    word        h;
-}                   twowords;
-
-typedef             union       /********************************/
-{                               /* implementation dependent !!! */
-    word        x;              /********************************/
-    twobytes    z;
-}                   wordreg;    /* assumes int = 2 bytes */
-
-typedef             union       /********************************/
-{                               /* implementation dependent !!! */
-    longword    x;              /********************************/
-    twowords    y;
-    fourbytes   z;              /* assumes long = 4 bytes and int = 2 bytes */
-}                   longwordreg;    
-
-#endif
+typedef  signed     char    *Z_charptr;
+typedef  signed     int     *Z_intptr;
+typedef  signed     long    *Z_longptr;
+typedef  signed     short   *Z_shortptr;
 
 #undef  FALSE
 #define FALSE       (0==1)
@@ -80,7 +64,8 @@ typedef             union       /********************************/
 
 typedef enum { false = FALSE , true = TRUE } boolean;
 
-#define mod         %       /* arithmetic operators */
+#define blockdef(name,size)         unsigned char name[size]
+#define blocktypedef(name,size)     typedef unsigned char name[size]
 
 #define and         &&      /* logical (boolean) operators: lower case */
 #define or          ||
@@ -94,6 +79,8 @@ typedef enum { false = FALSE , true = TRUE } boolean;
 #define SHR         >>
 
 #ifdef EXTENDED_LIB_DEFINITIONS
+
+#define mod         %       /* arithmetic operators */
 
 #define BELL        '\a'    /* bell             0x07 */
 #define BEL         '\a'    /* bell             0x07 */
@@ -110,13 +97,53 @@ typedef enum { false = FALSE , true = TRUE } boolean;
 #define NEWPAGE     '\f'    /* newpage          0x0C */
 #define CR          '\r'    /* carriage return  0x0D */
 
+typedef             struct
+{
+    base        l;
+    base        h;
+}                   twobases;
+
+typedef             struct
+{
+    base        a;
+    base        b;
+    base        c;
+    base        d;
+}                   fourbases;
+
+typedef             struct
+{
+    unit        l;
+    unit        h;
+}                   twounits;
+
+/*******************************/
+/* implementation dependent!!! */
+/*   (assumes int = 2 bytes)   */
+/*******************************/
+
+typedef             union
+{
+    unit        x;
+    twobases    z;
+}                   unitreg;
+
+/**********************************************/
+/*        implementation dependent!!!         */
+/* (assumes long = 4 bytes and int = 2 bytes) */
+/**********************************************/
+
+typedef             union
+{
+    longunit    x;
+    twounits    y;
+    fourbases   z;
+}                   longunitreg;
+
 #define lobyte(x)           (((int)(x)) & 0xFF)
 #define hibyte(x)           ((((int)(x)) >> 8) & 0xFF)
 
 #endif
-
-#define blockdef(name,size)         unsigned char name[size]
-#define blocktypedef(name,size)     typedef unsigned char name[size]
 
 /**************************************/
 /* RESOURCES                          */
@@ -131,7 +158,7 @@ typedef enum { false = FALSE , true = TRUE } boolean;
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     22.11.95              */
+/* MODIFIED     30.11.96              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/

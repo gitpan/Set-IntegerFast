@@ -6,15 +6,18 @@ no strict "vars";
 use Set::IntegerFast;
 
 # ======================================================================
-#   $set = Set::IntegerFast::Create($elements);
+#   $set = new Set::IntegerFast($elements);
+#   $set->Fill();
+#   $set->Empty();
+#   $set->Delete($i);
 #   $set->Insert($i);
 #   $set->in($i);
-#   $set1->Complement($set2);
+#   $set->Norm();
 # ======================================================================
 
 $limit = 1000;
 
-print "1..", $limit+2, "\n";
+print "1..", ($limit+2)*2, "\n";
 
 @prime = (0) x ($limit+1);
 
@@ -187,35 +190,50 @@ $prime[983] = 1;
 $prime[991] = 1;
 $prime[997] = 1;
 
-$set = Set::IntegerFast::Create($limit+1);
+$set1 = new Set::IntegerFast($limit+1);
+$set2 = new Set::IntegerFast($limit+1);
 
-$set->Insert(0);
-$set->Insert(1);
+$set1->Fill();
+$set2->Empty();
+
+$set1->Delete(0);
+$set1->Delete(1);
+$set2->Insert(0);
+$set2->Insert(1);
 
 for ( $j = 4; $j <= $limit; $j += 2 )
 {
-    $set->Insert($j);
+    $set1->Delete($j);
+    $set2->Insert($j);
 }
 
 for ( $i = 3; ($j = $i * $i) <= $limit; $i += 2 )
 {
     for ( ; $j <= $limit; $j += $i )
     {
-        $set->Insert($j);
+        $set1->Delete($j);
+        $set2->Insert($j);
     }
 }
-
-$set->Complement($set);
 
 $n = 1;
 for ( $i = 0; $i <= $limit; ++$i )
 {
-    if ($set->in($i) == $prime[$i]) {print "ok $n\n";} else {print "not ok $n\n";}
+    if ($set1->in($i) == $prime[$i])
+    {print "ok $n\n";} else {print "not ok $n\n";}
+    $n++;
+    if ($set2->in($i) == (1-$prime[$i]))
+    {print "ok $n\n";} else {print "not ok $n\n";}
     $n++;
 }
 
-if ($set->Norm == 168) {print "ok $n\n";} else {print "not ok $n\n";}
+if ($set1->Norm() == 168)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
-$set->Destroy;
+if ($set2->Norm() == ($limit-167))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 __END__
+
