@@ -17,7 +17,7 @@ require DynaLoader;
 
 @EXPORT_OK = qw();
 
-$VERSION = '2.1';
+$VERSION = '2.2';
 
 bootstrap Set::IntegerFast $VERSION;
 
@@ -1074,7 +1074,7 @@ you must do the following:
 
 =item -
 
-Change directory to the "F<Set-IntegerFast-2.1/>" distribution directory
+Change directory to the "F<Set-IntegerFast-2.2/>" distribution directory
 
 =item -
 
@@ -1434,7 +1434,7 @@ perlxstut(1), perlguts(1).
 
 =head1 VERSION
 
-This man page documents Set::IntegerFast version 2.1.
+This man page documents Set::IntegerFast version 2.2.
 
 =head1 AUTHOR
 

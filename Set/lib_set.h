@@ -149,7 +149,7 @@ void    Set_Copy        (unitptr X, unitptr Y);             /* X = Y         */
 //
 //           Result:                    Meaning:
 //
-//              1      The types 'unit' and 'size_t' differ in size
+//              1      The type 'unit' is larger (has more bits) than 'size_t'
 //              2      The number of bits of a machine word is not a power of 2
 //              3      The number of bits of a machine word is less than 8
 //                     (This would constitute a violation of ANSI C standards)
@@ -169,7 +169,7 @@ void    Set_Copy        (unitptr X, unitptr Y);             /* X = Y         */
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     19.12.96              */
+/* MODIFIED     20.01.97              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/

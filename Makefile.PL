@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'		=> 'Set-IntegerFast',
     'DISTNAME'		=> 'Set-IntegerFast',
-    'VERSION'		=> '3.0',
+    'VERSION'		=> '3.1',
     'dist'		=> { COMPRESS=>"gzip -9", SUFFIX=>"gz" },
     'LIBS'		=> [''],   # e.g., '-lm' 
     'DEFINE'		=> '',     # e.g., '-DHAVE_SOMETHING' 

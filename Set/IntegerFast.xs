@@ -81,32 +81,32 @@ BOOT:
     if (rc = Set_Auto_config())
     {
         fprintf(stderr,
-"Set::IntegerFast failed to auto-configure:\n");
+"'Set::IntegerFast' failed to auto-configure:\n");
         switch (rc)
         {
             case 1:
                 fprintf(stderr,
-"The types 'unit' and 'size_t' differ in size!\n");
+"the type 'unit' is larger (has more bits) than the type 'size_t'!\n");
                 break;
             case 2:
                 fprintf(stderr,
-"The number of bits of a machine word is not a power of 2!\n");
+"the number of bits of a machine word is not a power of 2!\n");
                 break;
             case 3:
                 fprintf(stderr,
-"The number of bits of a machine word is less than 8!\n");
+"the number of bits of a machine word is less than 8!\n");
                 break;
             case 4:
                 fprintf(stderr,
-"The number of bits of a machine word and sizeof(unit) are inconsistent!\n");
+"the number of bits of a machine word and 'sizeof(unit)' are inconsistent!\n");
                 break;
             case 5:
                 fprintf(stderr,
-"Unable to allocate memory with malloc()!\n");
+"unable to allocate memory with 'malloc()'!\n");
                 break;
             default:
                 fprintf(stderr,
-"Unforeseen error!\n");
+"unexpected (unknown) error!\n");
                 break;
         }
         exit(rc);
@@ -119,7 +119,7 @@ Version()
 PPCODE:
 {
     EXTEND(sp,1);
-    PUSHs(sv_2mortal(newSVpv("2.1",0)));
+    PUSHs(sv_2mortal(newSVpv("2.2",0)));
 }
 
 

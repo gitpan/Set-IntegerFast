@@ -149,7 +149,7 @@ void    Set_Copy        (unitptr X, unitptr Y);             (* X = Y         *)
 //
 //           Result:                    Meaning:
 //
-//              1      The types 'unit' and 'size_t' differ in size
+//              1      The type 'unit' is larger (has more bits) than 'size_t'
 //              2      The number of bits of a machine word is not a power of 2
 //              3      The number of bits of a machine word is less than 8
 //                     (This would constitute a violation of ANSI C standards)
@@ -179,7 +179,7 @@ static unit MODMASK;    /* = BITS - 1 (mask for calculating modulo BITS)     */
 static unit LOGBITS;    /* = ld(BITS) (logarithmus dualis)                   */
 static unit FACTOR;     /* = ld(BITS / 8) (ld of # of bytes)                 */
 
-#define     LSB   1     /* mask for least significant bit                    */
+static unit LSB = 1;    /* mask for least significant bit                    */
 static unit MSB;        /* mask for most significant bit                     */
 
     /***********************************************************************/
@@ -205,7 +205,7 @@ unit Set_Auto_config(void)
     unit sample = LSB;
     unit lsb;
 
-    if (sizeof(unit) != sizeof(size_t)) return(1);
+    if (sizeof(unit) > sizeof(size_t)) return(1);
 
     BITS = 1;
 
@@ -230,7 +230,7 @@ unit Set_Auto_config(void)
     FACTOR = LOGBITS - 3;  /* ld(BITS / 8) = ld(BITS) - ld(8) = ld(BITS) - 3 */
     MSB = (LSB << MODMASK);
 
-    BITMASKTAB = (unitptr) malloc(BITS << FACTOR);
+    BITMASKTAB = (unitptr) malloc((size_t) (BITS << FACTOR));
 
     if (BITMASKTAB == NULL) return(5);
 
@@ -304,7 +304,7 @@ unitptr Set_Create(N_int elements)                          /* malloc        */
     if (size > 0)
     {
         bytes = (size + HIDDEN_WORDS) << FACTOR;
-        addr = (unitptr) malloc(bytes);
+        addr = (unitptr) malloc((size_t) bytes);
         if (addr != NULL)
         {
 #ifdef ENABLE_BOUNDS_CHECKING
@@ -359,7 +359,7 @@ unitptr Set_Resize(unitptr oldaddr, N_int elements)         /* realloc       */
         else
         {
             bytes = (newsize + HIDDEN_WORDS) << FACTOR;
-            newaddr = (unitptr) malloc(bytes);
+            newaddr = (unitptr) malloc((size_t) bytes);
             if (newaddr != NULL)
             {
 #ifdef ENABLE_BOUNDS_CHECKING
@@ -674,7 +674,7 @@ void Set_Copy(unitptr X, unitptr Y)                         /* X = Y         */
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     19.12.96              */
+/* MODIFIED     20.01.97              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/
