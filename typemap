@@ -1,0 +1,52 @@
+####################################
+#
+# typemap for Perl 5 interface to Set::IntegerFast package
+#
+# written by Steffen Beyer (sb@sdm.de)
+# last modified 9th December 1995
+# version 1.0
+#
+#################################### Set::IntegerFast SECTION
+#
+TYPEMAP
+
+byte	T_U_CHAR
+word	T_IV
+longword	T_IV
+shortword	T_IV
+
+isochar	T_U_CHAR
+
+N_char	T_U_CHAR
+N_int	T_IV
+N_long	T_IV
+N_short	T_IV
+
+Z_char	T_CHAR
+Z_int	T_IV
+Z_long	T_IV
+Z_short	T_IV
+
+voidptr	T_PTR
+byteptr	T_PV
+wordptr	T_SET_OBJ
+longwordptr	T_OPAQUEPTR
+shortwordptr	T_OPAQUEPTR
+
+isocharptr	T_PV
+
+boolean	T_IV
+
+INPUT
+
+T_SET_OBJ
+    if (sv_isa($arg, \"${Package}\"))
+        $var = ($type) SvIV( (SV*) SvRV( $arg ) );
+    else
+        croak(\"not a '${Package}' object reference\")
+
+OUTPUT
+
+T_SET_OBJ
+    sv_setref_pv($arg, \"${Package}\", (voidptr) $var);
+

@@ -1,0 +1,241 @@
+=========================================
+  Module "Set::IntegerFast" Version 1.0
+=========================================
+
+--------------------------------------------------------------------------------
+ Extension package for Perl 5.001m (should work with Perl 5.000 and up as well)
+--------------------------------------------------------------------------------
+
+
+Legal stuff:
+------------
+
+Copyright (c) 1995 by Steffen Beyer. All rights reserved.
+This package is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+
+What does it do:
+----------------
+
+This package lets you dynamically create sets of arbitrary (but fixed) size
+(only limited by the size of a machine word and available memory on your system)
+of (positive) integers and to perform all the basic operations for sets on them,
+like adding or removing elements, testing for the presence of a certain element,
+computing the union, intersection, difference or complement of sets, copying
+sets, testing two sets for equality or inclusion, and computing the minimum,
+the maximum and the norm (number of elements) of a set.
+
+The package is mainly intended for mathematical or algorithmical computations.
+There are a number of efficient algorithms that rely on sets, like, for exam-
+ple, Kruskal's algorithm for minimal spanning trees in graphs (which uses a
+different representation of sets (trees stored in an array), however, than
+the one used by this package (bit vectors), which is included here for those
+interested as a Perl program), or the "Seave of Erathostenes" for calculating
+prime numbers, which is included here as a demo program.
+
+Another important field of application is the computation of "first", "follow"
+and "look-ahead" character sets for the construction of LL, SLR, LR and LALR
+parsers for compilers (or a compiler-compiler, like "yacc").
+
+(This is what the C code in this package was initially written for)
+
+(See Aho, Hopcroft, Ullman, "The Design and Analysis of Computer Algorithms"
+for an excellent book on efficient algorithms and the famous "Dragon Book" on
+how to build compilers by Aho, Sethi, Ullman)
+
+The package is designed for efficiency, not comfort. Therefore, it only
+offers a basic functionality and leaves it up to your application to add
+whatever special handling it needs (for example, negative indices can
+be realized by "shifting" the whole range with an offset).
+
+If you want a package for sets that offers more comfort for not so time-
+critical tasks, consider using the module "Set::Scalar" written by Jarkko
+Hietaniemi <Jarkko.Hietaniemi@hut.fi>, which allows you to use all kinds of
+Perl scalars as elements and offers an abundant range of methods to handle
+these sets.
+
+Sets in this package are implemented as bit vectors, and elements are positive
+integers from zero to the maximum number of elements (which you specify when
+creating the set) minus one.
+
+Each element (i.e., number or "index") thus corresponds to one bit in the
+bit array. Bit number 0 of word number 0 corresponds to element number 0,
+element number 1 corresponds to bit number 1 of word number 0, and so on.
+
+The package doesn't use bytes as basic storage unit, it rather uses machine
+words, assuming that a machine word is the most efficiently handled size of
+all scalar types on any system.
+
+In order to achieve this, it automatically determines the number of bits
+in a machine word on your system and then sets its internal basic constants
+accordingly.
+
+The greater the size of this basic storage unit, the better the complexity
+of the routines in this package (but also the greater the average waste of
+unused bits in the last word).
+
+See the Set::IntegerFast(3) man page for a detailed analysis of the com-
+plexity of each method!
+
+Here a brief description of all the available methods:
+
+     Version       returns a version string
+     Create        the set object constructor
+     Destroy       free() the memory occupied by a set
+     Empty         delete all elements in the set
+     Fill          insert all possible elements into the set
+     Insert        insert a given element
+     Delete        delete a given element
+     in            test the presence of a given element
+     Union         calculate the union of two sets   (in-place is possible)
+     Intersection  calculate the intersection of two sets            (idem)
+     Difference    calculate the difference of two sets ("A\B")      (idem)
+     Complement    calculate the complement of a set (in-place is possible)
+     equal         test two sets for equality relation
+     inclusion     test two sets for inclusion relation
+     lexorder      test two sets for lexical order relation
+     Compare       compare two sets - yields -1, 0 or 1 for <, = or >
+     Norm          calculate the norm (number of elements) of the set
+     Min           return the minimum of the set ( min{} = +infinity )
+     Max           return the maximum of the set ( max{} = -infinity )
+     Copy          copy one set to another
+
+For more details, see the Set::IntegerFast(3) man page!
+
+
+How to install it:
+------------------
+
+Please unpack and build this package OUTSIDE the Perl source and distribution
+tree!!
+
+ 1) Change directory to the directory that has been created by unpacking this
+    package ("Set-IntegerFast-1.0").
+
+ 2) Type "perl5 Makefile.PL" (or whatever the name and path of your Perl 5
+    binary is).
+
+    This will create a "Makefile" with the appropriate parameters for your
+    system (for instance, where the install directories are, and so on).
+
+ 3) Type "make".
+
+    This will create a dynamically linkable library file that will be linked
+    to Perl later, at runtime, provided your system supports dynamic linking.
+
+    Please refer to the MakeMaker documentation for instructions on how
+    to build a new Perl with statically linked libraries (invoke "perldoc
+    ExtUtils::MakeMaker" for this), if your system DOESN'T support dynamic
+    linking!
+
+    (Note, however, that I didn't test this since my system does support
+    dynamic linking.)
+
+    Should you encounter any compiler warnings or errors (like the redefini-
+    tion of certain types already defined by your system), please contact
+    me by mail at 'sb@sdm.de', sending me your compiler output (both STDOUT
+    and STDERR). Thank you!
+
+ 4) Now issue "make test".
+
+    The output should look somewhat like this:
+
+    PERL_DL_NONLAZY=1 /opt/bin/perl5 -I./blib/sun4-sunos -I./blib
+    -I/opt/lib/perl5.001m/sun4-sunos -I/opt/lib/perl5.001m -e
+    'use Test::Harness qw(&runtests $verbose); $verbose=0; runtests @ARGV;'
+    t/*.t
+    t/f000..............ok
+    t/f001..............ok
+    t/f002..............ok
+    t/f003..............ok
+    t/f004..............ok
+    t/f005..............ok
+    t/f006..............ok
+    t/f007..............ok
+    t/f008..............ok
+    t/f009..............ok
+    All tests successful.
+    Files=10,  Tests=2193,  6 secs ( 3.57 cusr  1.00 csys =  4.57 cpu)
+
+ 5) You will have to manually copy the man page "Set::IntegerFast.3" to your
+    man directory, probably one of "/usr/lang/man/cat3", "/usr/local/man/cat3",
+    "/usr/man/cat3", or the like (consult your MANPATH environment variable).
+
+    (The current version of MakeMaker doesn't yet support the copying of the
+    man pages to their destination directory.)
+
+    If, however, you have installed a newer version of Makemaker which
+    supports installing of the man pages, you can skip this step as it's
+    automatically taken care of by the "make install" in the next step.
+
+    You can also first try "make install", and if it doesn't install the
+    man page, copy it manually.
+
+ 6) Finally, type "make install".
+        
+ 7) Now you may try to run the "demo". Start it with "perl5 demo" (or what-
+    ever the name and path of your Perl 5 binary is).
+
+    It will ask you to enter a number which will serve as an upper limit for
+    the calculation of all prime numbers up to that limit, using the algorithm
+    known as "The Seave of Erathostenes".
+
+    On my machine (SUN SPARCstation 20/61), calculating all the prime numbers
+    up to one million takes about 1 minute 30 seconds to 2 minutes, depending
+    on the load.
+
+ 8) Enjoy!
+
+
+Version history:
+----------------
+
+Version 1.0 is the initial release.
+
+
+To do or in the works:
+----------------------
+
+A supplement is available but not yet integrated into the distribution which
+provides a "Resize" method which allows you to change the size of a set while
+retaining the information it contains (as much of it as possible).
+
+This supplement still needs to get tested, documented and eventually integrated
+into the distribution.
+
+
+Thanks:
+-------
+
+Many thanks to Jarkko Hietaniemi for his suggestions while I was developing
+this package!
+
+Many thanks also to the people of the perl5-porters <perl5-porters@nicoh.com>
+mailing list, specifically:
+
+Andreas Koenig <andreas.koenig@mind.de>
+Tim Bunce <Tim.Bunce@ig.co.uk>
+Jarkko Hietaniemi <Jarkko.Hietaniemi@hut.fi>
+Felix Gallo <fsg@coriolan.amicus.com>
+Mark A Biggar <mab@wdl.loral.com>
+Nick Ing-Simmons <nik@tiuk.ti.com>
+John Macdonald <jmm@elegant.com>
+
+for discussing and clarifying the naming and other issues of this package!
+
+
+Final note:
+-----------
+
+Please report any comments, problems, suggestions, findings, complaints,
+questions, insights, compliments or donations ;-) and so on to:
+
+sb@sdm.de (Steffen Beyer)
+
+Yours sincerely,
+--
+Steffen Beyer
+mailto:sb@sdm.de        |s  |d &|m  |  software design & management GmbH&Co.KG
+phone: +49 89 63812-244 |   |   |   |  Thomas-Dehler-Str. 27
+fax:   +49 89 63812-150 |   |   |   |  81737 Munich, Germany.
