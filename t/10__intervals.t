@@ -110,47 +110,47 @@ for ( $i = 0; $i < 256; $i++ )
 }
 
 eval { $set->Empty_Interval(-1,$lim-1); };
-if ($@ =~ /Set::IntegerFast::Empty_Interval\(\): lower index out of range/)
+if ($@ =~ /[^:]+::[^:]+::(?:Empty_)?Interval(?:_Empty)?\(\): minimum index out of range/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set->Fill_Interval(-1,$lim-1); };
-if ($@ =~ /Set::IntegerFast::Fill_Interval\(\): lower index out of range/)
+if ($@ =~ /[^:]+::[^:]+::(?:Fill_)?Interval(?:_Fill)?\(\): minimum index out of range/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set->Flip_Interval(-1,$lim-1); };
-if ($@ =~ /Set::IntegerFast::Flip_Interval\(\): lower index out of range/)
+if ($@ =~ /[^:]+::[^:]+::(?:Flip_)?Interval(?:_Flip)?\(\): minimum index out of range/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set->Empty_Interval(0,-1); };
-if ($@ =~ /Set::IntegerFast::Empty_Interval\(\): upper index out of range/)
+if ($@ =~ /[^:]+::[^:]+::(?:Empty_)?Interval(?:_Empty)?\(\): maximum index out of range/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set->Fill_Interval(0,-1); };
-if ($@ =~ /Set::IntegerFast::Fill_Interval\(\): upper index out of range/)
+if ($@ =~ /[^:]+::[^:]+::(?:Fill_)?Interval(?:_Fill)?\(\): maximum index out of range/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set->Flip_Interval(0,-1); };
-if ($@ =~ /Set::IntegerFast::Flip_Interval\(\): upper index out of range/)
+if ($@ =~ /[^:]+::[^:]+::(?:Flip_)?Interval(?:_Flip)?\(\): maximum index out of range/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set->Empty_Interval(1,0); };
-if ($@ =~ /Set::IntegerFast::Empty_Interval\(\): lower > upper index/)
+if ($@ =~ /[^:]+::[^:]+::(?:Empty_)?Interval(?:_Empty)?\(\): minimum > maximum index/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set->Fill_Interval(1,0); };
-if ($@ =~ /Set::IntegerFast::Fill_Interval\(\): lower > upper index/)
+if ($@ =~ /[^:]+::[^:]+::(?:Fill_)?Interval(?:_Fill)?\(\): minimum > maximum index/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set->Flip_Interval(1,0); };
-if ($@ =~ /Set::IntegerFast::Flip_Interval\(\): lower > upper index/)
+if ($@ =~ /[^:]+::[^:]+::(?:Flip_)?Interval(?:_Flip)?\(\): minimum > maximum index/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 

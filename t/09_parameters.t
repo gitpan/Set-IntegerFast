@@ -11,11 +11,11 @@ use Set::IntegerFast;
 
 $prefix = 'Set::IntegerFast';
 
-$bad_idx = '(?:lower |upper |)index out of range';
+$bad_idx = "^[^:]+::[^:]+::[^:]+\\(\\): (?:minimum |maximum |start |)index out of range";
 
-$mismatch = 'set size mismatch';
+$bad_size = "^[^:]+::[^:]+::[^:]+\\(\\): (?:bit vector|set|matrix) size mismatch";
 
-$bad_type = "not a '$prefix' object reference";
+$bad_type = "^[^:]+::[^:]+::[^:]+\\(\\): not a '[^']+' object reference";
 
 $numeric  = 1 << 3;
 $special  = 1 << 4;
@@ -26,12 +26,20 @@ $method_list{'Size'}           = 1;
 $method_list{'Resize'}         = 2 + $numeric;
 $method_list{'Empty'}          = 1;
 $method_list{'Fill'}           = 1;
+$method_list{'Interval_Empty'} = 3 + $numeric + $special;
+$method_list{'Interval_Fill'}  = 3 + $numeric + $special;
+$method_list{'Interval_Flip'}  = 3 + $numeric + $special;
 $method_list{'Empty_Interval'} = 3 + $numeric + $special;
 $method_list{'Fill_Interval'}  = 3 + $numeric + $special;
 $method_list{'Flip_Interval'}  = 3 + $numeric + $special;
-$method_list{'Insert'}         = 2 + $numeric + $special;
+$method_list{'Bit_Off'}        = 2 + $numeric + $special;
+$method_list{'Bit_On'}         = 2 + $numeric + $special;
 $method_list{'Delete'}         = 2 + $numeric + $special;
+$method_list{'Insert'}         = 2 + $numeric + $special;
+$method_list{'bit_flip'}       = 2 + $numeric + $special;
 $method_list{'flip'}           = 2 + $numeric + $special;
+$method_list{'bit_test'}       = 2 + $numeric + $special;
+$method_list{'contains'}       = 2 + $numeric + $special;
 $method_list{'in'}             = 2 + $numeric + $special;
 $method_list{'Norm'}           = 1;
 $method_list{'Min'}            = 1;
@@ -42,12 +50,13 @@ $method_list{'Difference'}     = 3;
 $method_list{'ExclusiveOr'}    = 3;
 $method_list{'Complement'}     = 2;
 $method_list{'equal'}          = 2;
+$method_list{'subset'}         = 2;
 $method_list{'inclusion'}      = 2;
 $method_list{'lexorder'}       = 2;
 $method_list{'Compare'}        = 2;
 $method_list{'Copy'}           = 2;
 
-print "1..715\n";
+print "1..1045\n";
 
 $n = 1;
 
@@ -55,7 +64,7 @@ $set = Set::IntegerFast->new($limit);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq $prefix)
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -66,7 +75,7 @@ $set1 = Set::IntegerFast->new($limit-1);
 if (defined $set1)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set1) eq $prefix)
+if (ref($set1) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set1} != 0)
@@ -77,7 +86,7 @@ $set2 = Set::IntegerFast->new($limit-2);
 if (defined $set2)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set2) eq $prefix)
+if (ref($set2) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set2} != 0)
@@ -88,7 +97,7 @@ $set3 = Set::IntegerFast->new($limit-3);
 if (defined $set3)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set3) eq $prefix)
+if (ref($set3) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set3} != 0)
@@ -217,7 +226,7 @@ foreach $method (keys %method_list)
             }
             else
             {
-                if ($@ =~ /${prefix}::$method\(\): $bad_idx/)
+                if ($@ =~ /$bad_idx/o)
                 {print "ok $n\n";} else {print "not ok $n\n";}
                 $n++;
             }
@@ -230,7 +239,7 @@ foreach $method (keys %method_list)
     }
     $action = "\$set->$method(\@parameters)";
     eval "$action";
-    if ($@ =~ /${prefix}::$method\(\): $bad_idx/)
+    if ($@ =~ /$bad_idx/o)
     {print "ok $n\n";} else {print "not ok $n\n";}
     $n++;
 }
@@ -265,7 +274,7 @@ foreach $method (keys %method_list)
         eval "$action";
         if ($i != $parms)
         {
-            if ($@ =~ /Usage: ${prefix}::$method\(/)
+            if ($@ =~ /^Usage: (?:[^:]+::[^:]+::)?[^:]+\([\w\$,]*\)/)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
         }
@@ -273,7 +282,7 @@ foreach $method (keys %method_list)
         {
             if ($idx_flag)
             {
-                if ($@ =~ /${prefix}::$method\(\): $bad_idx/)
+                if ($@ =~ /$bad_idx/o)
                 {print "ok $n\n";} else {print "not ok $n\n";}
                 $n++;
             }
@@ -298,7 +307,7 @@ foreach $method (keys %method_list)
                 bless($fake, 'nonsense');
                 &test_fake;
 
-                bless($fake, $prefix);
+                bless($fake, 'Set::IntegerFast');
                 &test_fake;
 
                 $fake = Set::IntegerFast->new($limit);
@@ -311,7 +320,7 @@ foreach $method (keys %method_list)
                 {
                     $action = "${prefix}::$method(\$set1,\$set2)";
                     eval "$action";
-                    if ($@ =~ /${prefix}::$method\(\): $mismatch/)
+                    if ($@ =~ /$bad_size/o)
                     {print "ok $n\n";} else {print "not ok $n\n";}
                     $n++;
                 }
@@ -319,22 +328,22 @@ foreach $method (keys %method_list)
                 {
                     $action = "${prefix}::$method(\$set1,\$set1,\$set2)";
                     eval "$action";
-                    if ($@ =~ /${prefix}::$method\(\): $mismatch/)
+                    if ($@ =~ /$bad_size/o)
                     {print "ok $n\n";} else {print "not ok $n\n";}
                     $n++;
                     $action = "${prefix}::$method(\$set1,\$set2,\$set1)";
                     eval "$action";
-                    if ($@ =~ /${prefix}::$method\(\): $mismatch/)
+                    if ($@ =~ /$bad_size/o)
                     {print "ok $n\n";} else {print "not ok $n\n";}
                     $n++;
                     $action = "${prefix}::$method(\$set1,\$set2,\$set2)";
                     eval "$action";
-                    if ($@ =~ /${prefix}::$method\(\): $mismatch/)
+                    if ($@ =~ /$bad_size/o)
                     {print "ok $n\n";} else {print "not ok $n\n";}
                     $n++;
                     $action = "${prefix}::$method(\$set1,\$set2,\$set3)";
                     eval "$action";
-                    if ($@ =~ /${prefix}::$method\(\): $mismatch/)
+                    if ($@ =~ /$bad_size/o)
                     {print "ok $n\n";} else {print "not ok $n\n";}
                     $n++;
                 }
@@ -348,8 +357,6 @@ exit;
 
 sub test_fake
 {
-    my($message) = quotemeta("${prefix}::${method}(): $bad_type");
-
     if ($num_flag)
     {
         if ($parms == 1)
@@ -361,7 +368,7 @@ sub test_fake
             $action = "${prefix}::$method(\$fake,\@parameters)";
         }
         eval "$action";
-        if ($@ =~ /$message/)
+        if ($@ =~ /$bad_type/o)
         {print "ok $n\n";} else {print "not ok $n\n";}
         $n++;
     }
@@ -371,7 +378,7 @@ sub test_fake
         {
             $action = "${prefix}::$method(\$fake)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
         }
@@ -379,17 +386,17 @@ sub test_fake
         {
             $action = "${prefix}::$method(\$set,\$fake)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
             $action = "${prefix}::$method(\$fake,\$set)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
             $action = "${prefix}::$method(\$fake,\$fake)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
         }
@@ -397,37 +404,37 @@ sub test_fake
         {
             $action = "${prefix}::$method(\$set,\$set,\$fake)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
             $action = "${prefix}::$method(\$set,\$fake,\$set)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
             $action = "${prefix}::$method(\$set,\$fake,\$fake)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
             $action = "${prefix}::$method(\$fake,\$set,\$set)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
             $action = "${prefix}::$method(\$fake,\$set,\$fake)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
             $action = "${prefix}::$method(\$fake,\$fake,\$set)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
             $action = "${prefix}::$method(\$fake,\$fake,\$fake)";
             eval "$action";
-            if ($@ =~ /$message/)
+            if ($@ =~ /$bad_type/o)
             {print "ok $n\n";} else {print "not ok $n\n";}
             $n++;
         }

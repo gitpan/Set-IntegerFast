@@ -3,16 +3,20 @@
 use strict;
 no strict "vars";
 
-use Set::IntegerRange;
+use Set::IntegerFast;
 
 # ======================================================================
-#   $Set::IntegerRange::VERSION
+#   $ver = Set::IntegerFast::Version();
+#   $Set::IntegerFast::VERSION
 # ======================================================================
 
-print "1..1\n";
+print "1..2\n";
 
 $n = 1;
-if ($Set::IntegerRange::VERSION eq "3.0")
+if (Set::IntegerFast::Version() eq "4.2")
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($Set::IntegerFast::VERSION eq "4.2")
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 

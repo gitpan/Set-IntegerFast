@@ -545,6 +545,6 @@ sub test
     {print "ok $n\n";} else {print "not ok $n\n";}
     $n++;
 }
-    
+
 __END__
 

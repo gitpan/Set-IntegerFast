@@ -21,7 +21,7 @@ $set = Set::IntegerFast::new('Set::IntegerFast',1);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -30,8 +30,8 @@ $n++;
 
 # test if the constructor handles NULL pointers as expected:
 
-$ref = Set::IntegerFast::new('Set::IntegerFast',0);
-if (!defined $ref)
+eval { $ref = Set::IntegerFast::new('Set::IntegerFast',0); };
+if ($@ =~ /zero length '[^']+' object not permitted/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -41,7 +41,7 @@ $ref = $set;
 if (defined $ref)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($ref) eq 'Set::IntegerFast')
+if (ref($ref) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$ref} != 0)
@@ -58,7 +58,7 @@ $set = Set::IntegerFast::new('Set::IntegerFast',&binomial(49,6));
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -109,7 +109,7 @@ $set = Set::IntegerFast::new($class,2);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -122,7 +122,7 @@ $ref = new Set::IntegerFast(3);
 if (defined $ref)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($ref) eq 'Set::IntegerFast')
+if (ref($ref) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$ref} != 0)
@@ -141,7 +141,7 @@ $set = Set::IntegerFast->new(4);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -167,7 +167,7 @@ $ref = $set->new(5);
 if (defined $ref)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($ref) eq 'Set::IntegerFast')
+if (ref($ref) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$ref} != 0)
@@ -179,7 +179,7 @@ $n++;
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -200,7 +200,7 @@ $ref = $set;
 if (defined $ref)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($ref) eq 'Set::IntegerFast')
+if (ref($ref) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$ref} != 0)
@@ -221,7 +221,7 @@ $set = $set->new(6);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -233,7 +233,7 @@ $n++;
 if (defined $ref)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($ref) eq 'Set::IntegerFast')
+if (ref($ref) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$ref} != 0)
@@ -254,7 +254,7 @@ $set = $set->new(7);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -270,22 +270,22 @@ $n++;
 # test weird ways of calling the constructor:
 
 eval { $set = Set::IntegerFast::new("",8); };
-if ($@ =~ /Set::IntegerFast::new\(\): error in first parameter \(class name or reference\)/)
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new('',9); };
-if ($@ =~ /Set::IntegerFast::new\(\): error in first parameter \(class name or reference\)/)
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new(undef,10); };
-if ($@ =~ /Set::IntegerFast::new\(\): error in first parameter \(class name or reference\)/)
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new(6502,11); };
-if ($@ =~ /Set::IntegerFast::new\(\): error in first parameter \(class name or reference\)/)
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -296,7 +296,7 @@ $n++;
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if ( (ref($set) eq 'main') || (ref($set) eq 'Set::IntegerFast') )
+if ( (ref($set) eq 'main') || (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/) )
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -315,7 +315,7 @@ $n++;
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if ( (ref($set) eq 'nonsense') || (ref($set) eq 'Set::IntegerFast') )
+if ( (ref($set) eq 'nonsense') || (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/) )
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -334,7 +334,7 @@ $n++;
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if ( (ref($set) eq 'main') || (ref($set) eq 'Set::IntegerFast') )
+if ( (ref($set) eq 'main') || (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/) )
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -354,7 +354,7 @@ $n++;
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if ( (ref($set) eq 'main') || (ref($set) eq 'Set::IntegerFast') )
+if ( (ref($set) eq 'main') || (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/) )
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -369,32 +369,32 @@ $n++;
 # test syntactically incorrect constructor calls:
 
 eval { $set = Set::IntegerFast::new(16); };
-if ($@ =~ /Usage: Set::IntegerFast::new\(class,elements\)/)
+if ($@ =~ /^Usage: [^:]+::[^:]+(?:::new\(class,|->new\(\$)elements\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new('main'); };
-if ($@ =~ /Usage: Set::IntegerFast::new\(class,elements\)/)
+if ($@ =~ /^Usage: [^:]+::[^:]+(?:::new\(class,|->new\(\$)elements\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new($set); };
-if ($@ =~ /Usage: Set::IntegerFast::new\(class,elements\)/)
+if ($@ =~ /^Usage: [^:]+::[^:]+(?:::new\(class,|->new\(\$)elements\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new('main',17,1); };
-if ($@ =~ /Usage: Set::IntegerFast::new\(class,elements\)/)
+if ($@ =~ /^Usage: [^:]+::[^:]+(?:::new\(class,|->new\(\$)elements\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new($set,'main',18); };
-if ($@ =~ /Usage: Set::IntegerFast::new\(class,elements\)/)
+if ($@ =~ /^Usage: [^:]+::[^:]+(?:::new\(class,|->new\(\$)elements\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
 eval { $set = Set::IntegerFast::new($set,19,'main'); };
-if ($@ =~ /Usage: Set::IntegerFast::new\(class,elements\)/)
+if ($@ =~ /^Usage: [^:]+::[^:]+(?:::new\(class,|->new\(\$)elements\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 

@@ -17,7 +17,7 @@ $set = Set::IntegerFast->new(1);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -28,14 +28,14 @@ if ($@ =~ /Modification of a read-only value attempted/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
-$set->Resize(0);
-if (defined $set)
+eval { $set->Resize(0); };
+if ($@ =~ /zero length '[^']+' object not permitted/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (${$set} == 0)
+if (${$set} != 0)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 eval { ${$set} = 1; };
@@ -47,7 +47,7 @@ $set = Set::IntegerFast->new(8);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -62,7 +62,7 @@ $set->Resize(65536);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -83,7 +83,7 @@ $set->Resize(4090);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -100,7 +100,7 @@ $set->Resize(4096);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -117,7 +117,7 @@ $set->Resize(&binomial(49,6));
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -141,7 +141,7 @@ $set->Resize($limit);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -184,7 +184,7 @@ $set->Resize($limit * 2);
 if (defined $set)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($set) eq 'Set::IntegerFast')
+if (ref($set) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} != 0)
@@ -205,7 +205,7 @@ $inv->Resize($limit * 2);
 if (defined $inv)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if (ref($inv) eq 'Set::IntegerFast')
+if (ref($inv) =~ /^Set::IntegerFast$|^Bit::Vector$/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$inv} != 0)
