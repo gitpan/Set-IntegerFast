@@ -3,8 +3,8 @@
 # typemap for Perl 5 interface to Set::IntegerFast package
 #
 # written by Steffen Beyer (sb@sdm.de)
-# last modified 9th December 1995
-# version 1.0
+# last modified 16th December 1995
+# version 1.1
 #
 #################################### Set::IntegerFast SECTION
 #
@@ -43,7 +43,7 @@ T_SET_OBJ
     if (sv_isa($arg, \"${Package}\"))
         $var = ($type) SvIV( (SV*) SvRV( $arg ) );
     else
-        croak(\"not a '${Package}' object reference\")
+        croak(\"Not a '${Package}' object reference\")
 
 OUTPUT
 

@@ -19,4 +19,5 @@ t/f006.t
 t/f007.t
 t/f008.t
 t/f009.t
+t/f010.t
 typemap

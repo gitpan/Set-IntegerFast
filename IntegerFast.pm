@@ -19,6 +19,7 @@ require DynaLoader;
 # Set::IntegerFast::Version   returns a version string
 # Set::IntegerFast::Create    the set object constructor
 # Destroy                     free() the memory occupied by a set
+# Resize                  change the size of a set
 # Empty                   delete all elements in the set
 # Fill                    insert all possible elements into the set
 # Insert                  insert a given element
@@ -27,6 +28,7 @@ require DynaLoader;
 # Union                   calculate the union of two sets   (in-place possible)
 # Intersection            calculate the intersection of two sets         (idem)
 # Difference              calculate the difference of two sets ("A\B")   (idem)
+# ExclusiveOr             calculate the symmetric difference of two sets (idem)
 # Complement              calculate the complement of a set (in-place possible)
 # equal                   test two sets for equality relation
 # inclusion               test two sets for inclusion relation

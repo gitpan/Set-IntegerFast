@@ -4,10 +4,10 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'	=> 'Set::IntegerFast',
     'DISTNAME'  => 'Set-IntegerFast',
-    'VERSION'	=> '1.0',
+    'VERSION'	=> '1.1',
     'OBJECT'	=> '$(O_FILES)',
     'LIBS'	=> [''],   # e.g., '-lm' 
     'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
-    'INC'	=> '',     # e.g., '-I/usr/include/other' 
+    'INC'	=> '',     # e.g., '-I/opt/pkg/perl5.001m/dist' 
     'dist'      => { COMPRESS=>"gzip", SUFFIX=>"gz" }
 );

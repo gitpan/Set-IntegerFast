@@ -37,17 +37,19 @@ word    Set_Mask(word elements);            // calc set mask (unused bits)
 
 wordptr Set_Create (word elements);                         // malloc
 void    Set_Destroy(wordptr addr);                          // free
+wordptr Set_Resize (wordptr oldaddr, word elements);        // realloc
 void    Set_Empty  (wordptr addr);                          // X = {}   clr all
 void    Set_Fill   (wordptr addr);                          // X = ~{}  set all
 
 //      set operations on elements:
 
-void    Set_Insert(word index, wordptr addr);               // X = X + {x}
-void    Set_Delete(word index, wordptr addr);               // X = X \ {x}
+void    Set_Insert(wordptr addr, word index);               // X = X + {x}
+void    Set_Delete(wordptr addr, word index);               // X = X \ {x}
 
 //      set test functions on elements:
 
-boolean Set_in       (word index, wordptr addr);            // {x} in X ?
+boolean Set_in    (wordptr addr, word index);               // {x} in X ?
+
 void    Set_in_Init  (word index, word *pos, word *mask);   // prepare test loop
 boolean Set_in_up  (wordptr addr, word *pos, word *mask);   // {x++} in X ?
 boolean Set_in_down(wordptr addr, word *pos, word *mask);   // {x--} in X ?
@@ -57,6 +59,7 @@ boolean Set_in_down(wordptr addr, word *pos, word *mask);   // {x--} in X ?
 void    Set_Union       (wordptr X, wordptr Y, wordptr Z);  // X = Y + Z
 void    Set_Intersection(wordptr X, wordptr Y, wordptr Z);  // X = Y * Z
 void    Set_Difference  (wordptr X, wordptr Y, wordptr Z);  // X = Y \ Z
+void    Set_ExclusiveOr (wordptr X, wordptr Y, wordptr Z);  // X=(Y+Z)\(Y*Z)
 void    Set_Complement  (wordptr X, wordptr Y);             // X = ~Y
 
 //      set test functions on whole sets:
@@ -172,7 +175,7 @@ static word MODMASK;    /* = BITS - 1 (mask for calculating modulo BITS) */
 static word LOGBITS;    /* = ld(BITS) (logarithmus dualis) */
 static word FACTOR;     /* = ld(BITS / 8) (ld of # of bytes) */
 
-static word LSB;        /* mask for least significant bit */
+#define     LSB   1     /* mask for least significant bit */
 static word MSB;        /* mask for most significant bit */
 
     /***********************************************************************/
@@ -195,7 +198,8 @@ static wordptr BITMASKTAB;
 
 word Set_Auto_config(void)
 {
-    word sample = 1;
+    word sample = LSB;
+    word lsb;
 
     if (sizeof(word) != sizeof(size_t)) return(1);
 
@@ -205,11 +209,11 @@ word Set_Auto_config(void)
 
     LOGBITS = 0;
     sample = BITS;
-    LSB = (sample AND 1);
-    while ((sample >>= 1) and (not LSB))
+    lsb = (sample AND LSB);
+    while ((sample >>= 1) and (not lsb))
     {
         ++LOGBITS;
-        LSB = (sample AND 1);
+        lsb = (sample AND LSB);
     }
 
     if (sample) return(2);          /* # of bits is not a power of 2! */
@@ -220,8 +224,7 @@ word Set_Auto_config(void)
 
     MODMASK = BITS - 1;
     FACTOR = LOGBITS - 3; /* ld(BITS / 8) = ld(BITS) - ld(8) = ld(BITS) - 3 */
-    LSB = 1;
-    MSB = (1 << MODMASK);
+    MSB = (LSB << MODMASK);
 
     BITMASKTAB = (wordptr) malloc(BITS << FACTOR);
 
@@ -229,7 +232,7 @@ word Set_Auto_config(void)
 
     for ( sample = 0; sample < BITS; ++sample )
     {
-        BITMASKTAB[sample] = (1 << sample);
+        BITMASKTAB[sample] = (LSB << sample);
     }
     return(0);
 }
@@ -276,13 +279,37 @@ word Set_Mask(word elements)                /* calc set mask (unused bits) */
     word mask;
 
     mask = elements AND MODMASK;
-    if (mask) mask = (word) ((LSB << mask) - 1); else mask = (word) (-1);
+    if (mask) mask = (word) ((LSB << mask) - 1); else mask = (word) (-1L);
     return(mask);
 }
 
     /********************************************************/
     /* object creation/destruction/initialization routines: */
     /********************************************************/
+
+void Set_Empty(wordptr addr)                            /* X = {}   clr all */
+{
+    word size;
+
+    size = *(addr-2);
+    while (size-- > 0) *addr++ = 0;
+}
+
+void Set_Fill(wordptr addr)                             /* X = ~{}  set all */
+{
+    word size;
+    word mask;
+    word fill;
+
+    size = *(addr-2);
+    mask = *(addr-1);
+    fill = (word) (-1L);
+    if (size > 0)
+    {
+        while (size-- > 0) *addr++ = fill;
+        *(--addr) &= mask;
+    }
+}
 
 wordptr Set_Create(word elements)                       /* malloc */
 {
@@ -300,12 +327,12 @@ wordptr Set_Create(word elements)                       /* malloc */
         addr = (wordptr) malloc(bytes);
         if (addr != NULL)
         {
-            memset(addr,0x00,bytes);
 #ifdef ENABLE_BOUNDS_CHECKING
             *addr++ = elements;
 #endif
             *addr++ = size;
             *addr++ = mask;
+            Set_Empty(addr);
         }
     }
     return(addr);
@@ -320,44 +347,75 @@ void Set_Destroy(wordptr addr)                          /* free */
     }
 }
 
-void Set_Empty(wordptr addr)                            /* X = {}   clr all */
+wordptr Set_Resize(wordptr oldaddr, word elements)      /* realloc */
 {
-    word size;
-
-    size = *(addr-2);
-    if (size > 0)
-    {
-        size <<= FACTOR;
-        memset(addr,0x00,size);
-    }
-}
-
-void Set_Fill(wordptr addr)                             /* X = ~{}  set all */
-{
-    word size;
-    word mask;
     word bytes;
+    word oldsize;
+    word newsize;
+    word oldmask;
+    word newmask;
+    wordptr source;
+    wordptr target;
+    wordptr newaddr;
 
-    size = *(addr-2);
-    mask = *(addr-1);
-    if (size > 0)
+    newaddr = NULL;
+    newsize = Set_Size(elements);
+    newmask = Set_Mask(elements);
+    oldsize = *(oldaddr-2);
+    oldmask = *(oldaddr-1);
+    if ((oldsize > 0) and (newsize > 0))
     {
-        bytes = size << FACTOR;
-        memset(addr,0xFF,bytes);
-        *(addr+--size) &= mask;
+        *(oldaddr+oldsize-1) &= oldmask;
+        if (oldsize >= newsize)
+        {
+            newaddr = oldaddr;
+#ifdef ENABLE_BOUNDS_CHECKING
+            *(newaddr-3) = elements;
+#endif
+            *(newaddr-2) = newsize;
+            *(newaddr-1) = newmask;
+            *(newaddr+newsize-1) &= newmask;
+        }
+        else
+        {
+            bytes = (newsize + HIDDEN_WORDS) << FACTOR;
+            newaddr = (wordptr) malloc(bytes);
+            if (newaddr != NULL)
+            {
+#ifdef ENABLE_BOUNDS_CHECKING
+                *newaddr++ = elements;
+#endif
+                *newaddr++ = newsize;
+                *newaddr++ = newmask;
+                source = oldaddr;
+                target = newaddr;
+                while (newsize-- > 0)
+                {
+                    if (oldsize > 0)
+                    {
+                        --oldsize;
+                        *target++ = *source++;
+                    }
+                    else *target++ = 0;
+                }
+            }
+            Set_Destroy(oldaddr);
+        }
     }
+    else Set_Destroy(oldaddr);
+    return(newaddr);
 }
 
     /*******************************/
     /* set operations on elements: */
     /*******************************/
 
-void Set_Insert(word index, wordptr addr)                   /* X = X + {x} */
+void Set_Insert(wordptr addr, word index)                   /* X = X + {x} */
 {
     *(addr+(index>>LOGBITS)) |= BITMASKTAB[index AND MODMASK];
 }
 
-void Set_Delete(word index, wordptr addr)                   /* X = X \ {x} */
+void Set_Delete(wordptr addr, word index)                   /* X = X \ {x} */
 {
     *(addr+(index>>LOGBITS)) &= NOT BITMASKTAB[index AND MODMASK];
 }
@@ -366,7 +424,7 @@ void Set_Delete(word index, wordptr addr)                   /* X = X \ {x} */
     /* set test functions on elements: */
     /***********************************/
 
-boolean Set_in(word index, wordptr addr)                    /* {x} in X ? */
+boolean Set_in(wordptr addr, word index)                    /* {x} in X ? */
 {
     return( (*(addr+(index>>LOGBITS)) AND BITMASKTAB[index AND MODMASK]) != 0 );
 }
@@ -426,17 +484,43 @@ void Set_Union(wordptr X, wordptr Y, wordptr Z)             /* X = Y + Z */
 void Set_Intersection(wordptr X, wordptr Y, wordptr Z)      /* X = Y * Z */
 {
     word size;
+    word mask;
 
     size = *(X-2);
-    while (size-- > 0) *X++ = *Y++ AND *Z++;
+    mask = *(X-1);
+    if (size > 0)
+    {
+        while (size-- > 0) *X++ = *Y++ AND *Z++;
+        *(--X) &= mask;
+    }
 }
 
 void Set_Difference(wordptr X, wordptr Y, wordptr Z)        /* X = Y \ Z */
 {
     word size;
+    word mask;
 
     size = *(X-2);
-    while (size-- > 0) *X++ = *Y++ AND NOT *Z++;
+    mask = *(X-1);
+    if (size > 0)
+    {
+        while (size-- > 0) *X++ = *Y++ AND NOT *Z++;
+        *(--X) &= mask;
+    }
+}
+
+void Set_ExclusiveOr(wordptr X, wordptr Y, wordptr Z)       /* X=(Y+Z)\(Y*Z) */
+{
+    word size;
+    word mask;
+
+    size = *(X-2);
+    mask = *(X-1);
+    if (size > 0)
+    {
+        while (size-- > 0) *X++ = *Y++ XOR *Z++;
+        *(--X) &= mask;
+    }
 }
 
 void Set_Complement(wordptr X, wordptr Y)                   /* X = ~Y */
@@ -571,15 +655,13 @@ void Set_Copy(wordptr X, wordptr Y)                         /* X = Y */
 {
     word size;
     word mask;
-    word bytes;
 
     size = *(X-2);
     mask = *(X-1);
     if (size > 0)
     {
-        bytes = size << FACTOR;
-        memcpy(X,Y,bytes);
-        *(X+--size) &= mask;
+        while (size-- > 0) *X++ = *Y++;
+        *(--X) &= mask;
     }
 }
 /**************************************/
@@ -587,7 +669,7 @@ void Set_Copy(wordptr X, wordptr Y)                         /* X = Y */
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     12.12.95              */
+/* MODIFIED     16.12.95              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/

@@ -1,5 +1,5 @@
 =========================================
-  Module "Set::IntegerFast" Version 1.0
+  Module "Set::IntegerFast" Version 1.1
 =========================================
 
 --------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ modify it under the same terms as Perl itself.
 What does it do:
 ----------------
 
-This package lets you dynamically create sets of arbitrary (but fixed) size
+This package lets you dynamically create sets of arbitrary (changeable!) size
 (only limited by the size of a machine word and available memory on your system)
 of (positive) integers and to perform all the basic operations for sets on them,
 like adding or removing elements, testing for the presence of a certain element,
@@ -83,6 +83,7 @@ Here a brief description of all the available methods:
      Version       returns a version string
      Create        the set object constructor
      Destroy       free() the memory occupied by a set
+     Resize        change the size of a set
      Empty         delete all elements in the set
      Fill          insert all possible elements into the set
      Insert        insert a given element
@@ -91,6 +92,7 @@ Here a brief description of all the available methods:
      Union         calculate the union of two sets   (in-place is possible)
      Intersection  calculate the intersection of two sets            (idem)
      Difference    calculate the difference of two sets ("A\B")      (idem)
+     ExclusiveOr   calculate the symmetric difference of two sets    (idem)
      Complement    calculate the complement of a set (in-place is possible)
      equal         test two sets for equality relation
      inclusion     test two sets for inclusion relation
@@ -111,7 +113,7 @@ Please unpack and build this package OUTSIDE the Perl source and distribution
 tree!!
 
  1) Change directory to the directory that has been created by unpacking this
-    package ("Set-IntegerFast-1.0").
+    package ("Set-IntegerFast-1.1").
 
  2) Type "perl5 Makefile.PL" (or whatever the name and path of your Perl 5
     binary is).
@@ -137,6 +139,22 @@ tree!!
     me by mail at 'sb@sdm.de', sending me your compiler output (both STDOUT
     and STDERR). Thank you!
 
+    Should you get the error messages
+
+    IntegerFast.c: 15: Unable to find include file 'EXTERN.h'.
+    IntegerFast.c: 16: Unable to find include file 'perl.h'.
+    IntegerFast.c: 17: Unable to find include file 'XSUB.h'.
+
+    then edit the file Makefile.PL and change the line
+
+    'INC'	=> '',     # e.g., '-I/opt/pkg/perl5.001m/dist' 
+
+    in such a way that it points to your Perl 5 distribution tree, e.g.,
+
+    'INC'       => '-I/usr/ctr/dlt/private/perl/perl5.001m',
+
+    or the like, and start over with the generation of the Makefile at 2).
+
  4) Now issue "make test".
 
     The output should look somewhat like this:
@@ -155,8 +173,9 @@ tree!!
     t/f007..............ok
     t/f008..............ok
     t/f009..............ok
+    t/f010..............ok
     All tests successful.
-    Files=10,  Tests=2193,  6 secs ( 3.57 cusr  1.00 csys =  4.57 cpu)
+    Files=11,  Tests=2506,  6 secs ( 4.68 cusr  0.75 csys =  5.43 cpu)
 
  5) You will have to manually copy the man page "Set::IntegerFast.3" to your
     man directory, probably one of "/usr/lang/man/cat3", "/usr/local/man/cat3",
@@ -191,18 +210,20 @@ tree!!
 Version history:
 ----------------
 
-Version 1.0 is the initial release.
+Version 1.0 was the initial release.
 
+Version 1.1 offers a "Resize" method which allows you to change the size of
+a set while retaining the information it contains (as much of it as possible)
+and fixes some errors in the documentation (the methods Create, Empty, Fill
+and Copy had complexity n/8 and not n/b, of course!) by changing the imple-
+mentation of these methods (so that they now have complexity n/b).
 
-To do or in the works:
-----------------------
+The interface of the C routines is more consistent now (the pointer to the
+set is now always the first argument) and a few more paragraphs have been
+added to the documentation.
 
-A supplement is available but not yet integrated into the distribution which
-provides a "Resize" method which allows you to change the size of a set while
-retaining the information it contains (as much of it as possible).
-
-This supplement still needs to get tested, documented and eventually integrated
-into the distribution.
+The method "ExclusiveOr" (which calculates the symmetric difference X =
+(Y + Z) \ (Y * Z) of two sets Y and Z) has also been added in this version.
 
 
 Thanks:
@@ -223,6 +244,11 @@ Nick Ing-Simmons <nik@tiuk.ti.com>
 John Macdonald <jmm@elegant.com>
 
 for discussing and clarifying the naming and other issues of this package!
+
+Also many thanks to David Thompson <dlt@dewey.csun.edu> for reporting a
+problem he encountered concerning the inclusion of the Perl distribution
+into the search path for h-files together with his solution. (That's the
+most pleasant kind of problem report, of course! ;-) )
 
 
 Final note:

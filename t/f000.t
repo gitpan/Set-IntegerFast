@@ -12,6 +12,6 @@ use Set::IntegerFast;
 print "1..1\n";
 
 $n = 1;
-if (Set::IntegerFast::Version() eq "1.0") {print "ok $n\n";} else {print "not ok $n\n";}
+if (Set::IntegerFast::Version() eq "1.1") {print "ok $n\n";} else {print "not ok $n\n";}
 
 __END__

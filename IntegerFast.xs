@@ -64,7 +64,7 @@ Version()
 PPCODE:
 {
     EXTEND(sp,1);
-    PUSHs(sv_2mortal(newSVpv("1.0",0)));
+    PUSHs(sv_2mortal(newSVpv("1.1",0)));
 }
 
 
@@ -128,6 +128,18 @@ addr
 
 
 void
+Set_Resize(addr,elements)
+wordptr	addr
+word	elements
+CODE:
+{
+    addr = Set_Resize(addr,elements);
+}
+OUTPUT:
+addr
+
+
+void
 Set_Empty(addr)
 wordptr	addr
 
@@ -146,7 +158,7 @@ CODE:
     if (index >= *(addr-3))
         croak("'Set::IntegerFast': index out of range");
     else
-        Set_Insert(index,addr);
+        Set_Insert(addr,index);
 }
 
 
@@ -159,7 +171,7 @@ CODE:
     if (index >= *(addr-3))
         croak("'Set::IntegerFast': index out of range");
     else
-        Set_Delete(index,addr);
+        Set_Delete(addr,index);
 }
 
 
@@ -172,7 +184,7 @@ CODE:
     if (index >= *(addr-3))
         croak("'Set::IntegerFast': index out of range");
     else
-        RETVAL = Set_in(index,addr);
+        RETVAL = Set_in(addr,index);
 }
 OUTPUT:
 RETVAL
@@ -248,6 +260,20 @@ CODE:
         croak("'Set::IntegerFast': set size mismatch");
     else
         Set_Difference(X,Y,Z);
+}
+
+
+void
+Set_ExclusiveOr(X,Y,Z)
+wordptr	X
+wordptr	Y
+wordptr	Z
+CODE:
+{
+    if ((*(X-3) != *(Y-3)) or (*(X-3) != *(Z-3)))
+        croak("'Set::IntegerFast': set size mismatch");
+    else
+        Set_ExclusiveOr(X,Y,Z);
 }
 
 

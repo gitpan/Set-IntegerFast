@@ -9,13 +9,14 @@ use Set::IntegerFast;
 #   $set1->Union($set2,$set3);
 #   $set1->Intersection($set2,$set3);
 #   $set1->Difference($set2,$set3);
+#   $set1->ExclusiveOr($set2,$set3);
 #   $set1->Complement($set2);
 #   $set1->equal($set2);
 #   $set1->inclusion($set2);
 #   $set1->Copy($set2);
 # ======================================================================
 
-print "1..42\n";
+print "1..47\n";
 
 $set0 = Set::IntegerFast::Create(1000);
 $set1 = Set::IntegerFast::Create(1000);
@@ -133,6 +134,22 @@ $set4->Difference($set3,$set2);
 if ($set4->equal($set1))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+$set4->ExclusiveOr($set0,$set1);
+if ($set4->equal($set1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+$set4->ExclusiveOr($set1,$set1);
+if ($set4->equal($set0))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+$set4->ExclusiveOr($set1,$set2);
+if ($set4->equal($set3))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+$set4->ExclusiveOr($set1,$set3);
+if ($set4->equal($set2))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 $set4->Complement($set0);
 if ($set4->equal($set3))
 {print "ok $n\n";} else {print "not ok $n\n";}
@@ -179,6 +196,10 @@ if ($set4->equal($set3))
 $n++;
 $set4->Difference($set4,$set2);
 if ($set4->equal($set1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+$set4->ExclusiveOr($set4,$set3);
+if ($set4->equal($set2))
 {print "ok $n\n";} else {print "not ok $n\n";}
 
 $set0->Destroy;

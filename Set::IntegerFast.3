@@ -19,6 +19,7 @@ SYNOPSIS
      $set = Set::IntegerFast::Create($elements);
 
      Set::IntegerFast::Destroy($set);
+     Set::IntegerFast::Resize($set,$elements);
      Set::IntegerFast::Empty($set);
      Set::IntegerFast::Fill($set);
      Set::IntegerFast::Insert($set,$i);
@@ -27,6 +28,7 @@ SYNOPSIS
      Set::IntegerFast::Union($set1,$set2,$set3);
      Set::IntegerFast::Intersection($set1,$set2,$set3);
      Set::IntegerFast::Difference($set1,$set2,$set3);
+     Set::IntegerFast::ExclusiveOr($set1,$set2,$set3);
      Set::IntegerFast::Complement($set1,$set2);
      Set::IntegerFast::equal($set1,$set2);
      Set::IntegerFast::inclusion($set1,$set2);
@@ -40,6 +42,7 @@ SYNOPSIS
      Object oriented:
 
      $set->Destroy;
+     $set->Resize($elements);
      $set->Empty;
      $set->Fill;
      $set->Insert($i);
@@ -48,6 +51,7 @@ SYNOPSIS
      $set1->Union($set2,$set3);
      $set1->Intersection($set2,$set3);
      $set1->Difference($set2,$set3);
+     $set1->ExclusiveOr($set2,$set3);
      $set1->Complement($set2);
      $set1->equal($set2);
      $set1->inclusion($set2);
@@ -63,6 +67,7 @@ SYNOPSIS
      Version       returns a version string
      Create        the set object constructor
      Destroy       free() the memory occupied by a set
+     Resize        change the size of a set
      Empty         delete all elements in the set
      Fill          insert all possible elements into the set
      Insert        insert a given element
@@ -71,6 +76,7 @@ SYNOPSIS
      Union         calculate the union of two sets   (in-place is possible)
      Intersection  calculate the intersection of two sets            (idem)
      Difference    calculate the difference of two sets ("A\B")      (idem)
+     ExclusiveOr   calculate the symmetric difference of two sets    (idem)
      Complement    calculate the complement of a set (in-place is possible)
      equal         test two sets for equality relation
      inclusion     test two sets for inclusion relation
@@ -128,17 +134,17 @@ DESCRIPTION
      to expand the set object, rather embed a reference to the set
      in your object instead of using inheritance.
 
-     Note that this method returns a NULL pointer (an undefined reference)
-     if you try to create a set object with zero elements. Any attempt to
-     use this reference either results in a Perl warning about the use of
-     an uninitialized value (if the -w switch is set) if it is used as a
-     normal Perl variable, or an error message with abortion of program
-     execution if you try to invoke a method with it.
+     Note that this method returns the value "undef" if you try to create
+     a set object with zero elements. Any attempt to use this reference
+     either results in a warning about the use of an uninitialized value
+     (if the -w switch is set) or an error message with program abortion
+     if you try to invoke a method with it.
 
      Note also that if you specify a negative number for "$elements" it
      will be interpreted as a large positive number due to its internal
      2's complement representation and the set object constructor method
-     will attempt to create a set of that size.
+     will attempt to create a set of that size, probably resulting in an
+     "out of memory" error message and program abortion.
 
      ==================
        $set->Destroy;
@@ -151,7 +157,7 @@ DESCRIPTION
 
      If you lose the reference to your object (i.e., overwrite or
      undef the Perl variable containing the reference), the memory
-     space of your set object will remain occupied but unaccessible
+     space of your set object will remain occupied but inaccessible
      through the rest of the lifetime of your Perl application.
 
      If you do this repeatedly, your application will use more and
@@ -169,6 +175,108 @@ DESCRIPTION
      perl?" of the "Configure" script in the Perl distribution with
      "no"). I didn't test this, because I didn't want to go into the
      pains of rebuilding Perl.)
+
+     Note that once you have called the destructor method, your Perl
+     variable no longer contains a valid reference. In fact its value
+     becomes "undef". Any attempt to use the contents of the variable
+     either results in a warning about the use of an uninitialized
+     value (if the -w switch is set) or an error message with program
+     abortion if you try to invoke a method with it.
+
+     ============================
+       $set->Resize($elements);
+     ============================
+
+     This method allows you to change the size of an existing set,
+     thereby preserving as many of the elements contained in it as
+     will fit into the new set (i.e., all elements less than the
+     minimum of the old and the new maximum number of elements).
+
+     If the number of machine words needed to store the given maxi-
+     mum number of elements of the new set is smaller than or equal
+     to the number of words needed to store the old set, the memory
+     already allocated to the old set is kept and simply adjusted to
+     hold the new set.
+
+     This means that even if the maximum number of elements increa-
+     ses, this does not necessarily mean that new memory needs to
+     be allocated (if the old and the new maximum number of ele-
+     ments fit into the same number of machine words)!
+
+     If the number of machine words needed to store the given maxi-
+     mum number of elements of the new set is greater than the num-
+     ber of words needed to store the old set, new memory is allo-
+     cated for the new set, the old set is copied to the new one
+     and the old set is deleted, i.e., the memory allocated to it
+     is freed.
+
+     THIS MEANS THAT THE POINTER (REFERENCE) STORED IN "$set" MAY NOT
+     BE THE SAME AS BEFORE, INVALIDATING ANY COPIES OF THE OLD POINTER
+     YOU MIGHT HAVE KEPT IN OTHER VARIABLES - BEWARE!!!
+
+     It also means that if you decrease the size of a given set
+     so that it will use fewer machine words, and increase it again
+     later so that it will use more words than the downsized set but
+     still less than the original set, new memory will be allocated
+     anyway because the information about the size of the original
+     set is lost when you downsize it.
+
+     When the maximum number of elements is increased (regardless of
+     wether the number of machine words used to store the new set
+     increases or stays the same), the new elements are all initialized
+     to zero, i.e., they are not contained in the new set.
+
+     Beware that when you invert the meaning of contained/not contai-
+     ned in your calculations (which you are free of doing, of course),
+     i.e., when you are calculating the complement of the set you're
+     actually interested in, increasing the size of your set might not
+     yield the result you'd expect!
+
+     I.e., doing this might not work as intended:
+
+     $set = Set::IntegerFast::Create(1000);
+     $set->Insert(0);
+     $set->Insert(1);
+     for ( $j = 4; $j <= $limit; $j += 2 ) { $set->Insert($j); }
+     for ( $i = 3; ($j = $i * $i) <= $limit; $i += 2 )
+     {
+         for ( ; $j <= $limit; $j += $i ) { $set->Insert($j); }
+     }
+     $set->Resize(100000);
+
+     This calculates the prime numbers up to 1000 and then increases
+     the size of the set to 100000. However, since the original set
+     contains all the NON-prime numbers, increasing the size of the
+     set ends up with a mess: if an element below 1000 is not contai-
+     ned in the set, it's a prime number, whereas all the numbers
+     between 1000 and 100000 (which are not contained in the set
+     due to the initialization of the new set) may or may not be
+     prime numbers.
+
+     If you calculate the set of primes instead and then increase the
+     size of the set, there is no interpretation conflict:
+
+     $set = Set::IntegerFast::Create(1000);
+     $set->Fill;
+     $set->Delete(0);
+     $set->Delete(1);
+     for ( $j = 4; $j <= $limit; $j += 2 ) { $set->Delete($j); }
+     for ( $i = 3; ($j = $i * $i) <= $limit; $i += 2 )
+     {
+         for ( ; $j <= $limit; $j += $i ) { $set->Delete($j); }
+     }
+     $set->Resize(100000);
+
+     In this case, all the elements which are contained in the new set
+     definitely are prime numbers!
+
+     Finally, note that "$set->Resize(0);" is (internally) exactly the
+     same as "$set->Destroy;". (Remember Larry Wall: "There is more than
+     one way to do it!")
+
+     As with "Destroy", the contents of "$set" becomes "undef" by doing
+     this (see the explanation of the "Destroy" method above for more
+     details).
 
      ================
        $set->Empty;
@@ -252,7 +360,7 @@ DESCRIPTION
      "$set1" gets overwritten, i.e., lost.
 
      In-place substitution is possible, i.e., the resulting set may
-     also be one of the two arguments.
+     also be one (or both) of the two arguments.
 
      Note that the two argument sets and the resulting set must all
      have the same size (i.e., they must have been created with the
@@ -270,7 +378,7 @@ DESCRIPTION
      "$set1" gets overwritten, i.e., lost.
 
      In-place substitution is possible, i.e., the resulting set may
-     also be one of the two arguments.
+     also be one (or both) of the two arguments.
 
      Note that the two argument sets and the resulting set must all
      have the same size (i.e., they must have been created with the
@@ -288,7 +396,33 @@ DESCRIPTION
      "$set1" gets overwritten, i.e., lost.
 
      In-place substitution is possible, i.e., the resulting set may
-     also be one of the two arguments.
+     also be one (or both) of the two arguments.
+
+     Note that the two argument sets and the resulting set must all
+     have the same size (i.e., they must have been created with the
+     same maximum number "$elements" of elements) or you will get
+     an error message.
+
+     ===================================
+       $set1->ExclusiveOr($set2,$set3);
+     ===================================
+
+     This method computes the symmetric difference of the two argu-
+     ment sets, i.e., "( $set2 + $set3 ) \ ( $set2 * $set3 )", and
+     places the result into "$set1".
+
+     Note that the above formula is equivalent to calculating the
+     exclusive-or of the corresponding elements in the two argument
+     sets, hence the name of this method.
+
+     Calculating the exclusive-or is much faster than evaluating the
+     above formula because it uses an intrinsic processor operation.
+
+     The information that initially was stored in the resulting set
+     "$set1" gets overwritten, i.e., lost.
+
+     In-place substitution is possible, i.e., the resulting set may
+     also be one (or both) of the two arguments.
 
      Note that the two argument sets and the resulting set must all
      have the same size (i.e., they must have been created with the
@@ -468,6 +602,7 @@ COMPLEXITY
 
         Create               n/b         n/b         n/b          1)
         Destroy              1           1           1
+        Resize               n/b         1           n+b/2b       2)
         Empty                n/b         n/b         n/b
         Fill                 n/b         n/b         n/b
         Insert               1           1           1
@@ -476,25 +611,33 @@ COMPLEXITY
         Union                n/b         n/b         n/b
         Intersection         n/b         n/b         n/b
         Difference           n/b         n/b         n/b
+        ExclusiveOr          n/b         n/b         n/b
         Complement           n/b         n/b         n/b
-        equal                n/b         1           <<P1>>       2)
-        inclusion            n/b         1           <<P2>>       2)
-        lexorder             n/8         n/8         n/8          3)
-        Compare              n/8         n/8         n/8          3)
-        Norm                 n/b+n       n/b         <<P3>>       4)
-        Min                  n/b+b       2           <<P4>>       5)
-        Max                  n/b+b       2           <<P4>>       5)
+        equal                n/b         1           <<P1>>       3)
+        inclusion            n/b         1           <<P2>>       3)
+        lexorder             n/8         n/8         n/8          4)
+        Compare              n/8         n/8         n/8          4)
+        Norm                 n/b+n       n/b         <<P3>>       5)
+        Min                  n/b+b       2           <<P4>>       6)
+        Max                  n/b+b       2           <<P4>>       6)
         Copy                 n/b         n/b         n/b
 
      1) complexity is n/b here because a set is always initialized to
         an empty set (padded with zeros).
-     2) "best case" is when the condition is false at the first word!
-     3) the two sets are compared one 8-bit character at a time
-     4) "worst case" is when the set is full, i.e., all elements are
+     2) "n" is the maximum number of elements in the NEW set here.
+        "best case" is when the new set is smaller than the old set.
+        "worst case" is when the new set is larger than the old one,
+        in which case the new set has to be initialized and the old
+        set has to be copied to the new one. "average case" assumes
+        that half of the time the new set is larger, half of the time
+        it is smaller than the old set.
+     3) "best case" is when the condition is false at the first word.
+     4) the two sets are compared one 8-bit character at a time.
+     5) "worst case" is when the set is full, i.e., all elements are
         present. "best case" is when the set is empty.
-     5) "best case" is when the first (Min) / the last (Max) element
-        is set! "worst case" is when ONLY the last (Min) / the first
-        (Max) element is set! (The algorithm has complexity n/b for
+     6) "best case" is when the first (Min) / the last (Max) element
+        is set. "worst case" is when ONLY the last (Min) / the first
+        (Max) element is set. (The algorithm has complexity n/b for
         a completely empty set)
 
      For sufficiently small values of "n", the average case complexity
@@ -753,7 +896,7 @@ SEE ALSO
      perlapi(1), perlguts(1).
 
 VERSION
-     This man page documents Set::IntegerFast, version 1.0.
+     This man page documents Set::IntegerFast, version 1.1.
 
 AUTHOR
      Steffen Beyer <sb@sdm.de> (sd&m GmbH&Co.KG, Munich, Germany)

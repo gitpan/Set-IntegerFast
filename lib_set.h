@@ -33,17 +33,19 @@ word    Set_Mask(word elements);            /* calc set mask (unused bits) */
 
 wordptr Set_Create (word elements);                     /* malloc */
 void    Set_Destroy(wordptr addr);                      /* free */
+wordptr Set_Resize (wordptr oldaddr, word elements);    /* realloc */
 void    Set_Empty  (wordptr addr);                      /* X = {}   clr all */
 void    Set_Fill   (wordptr addr);                      /* X = ~{}  set all */
 
 /*      set operations on elements: */
 
-void    Set_Insert(word index, wordptr addr);               /* X = X + {x} */
-void    Set_Delete(word index, wordptr addr);               /* X = X \ {x} */
+void    Set_Insert(wordptr addr, word index);               /* X = X + {x} */
+void    Set_Delete(wordptr addr, word index);               /* X = X \ {x} */
 
 /*      set test functions on elements: */
 
-boolean Set_in       (word index, wordptr addr);            /* {x} in X ? */
+boolean Set_in    (wordptr addr, word index);               /* {x} in X ? */
+
 void    Set_in_Init  (word index, word *pos, word *mask);   /* prepare test loop */
 boolean Set_in_up  (wordptr addr, word *pos, word *mask);   /* {x++} in X ? */
 boolean Set_in_down(wordptr addr, word *pos, word *mask);   /* {x--} in X ? */
@@ -53,6 +55,7 @@ boolean Set_in_down(wordptr addr, word *pos, word *mask);   /* {x--} in X ? */
 void    Set_Union       (wordptr X, wordptr Y, wordptr Z);  /* X = Y + Z */
 void    Set_Intersection(wordptr X, wordptr Y, wordptr Z);  /* X = Y * Z */
 void    Set_Difference  (wordptr X, wordptr Y, wordptr Z);  /* X = Y \ Z */
+void    Set_ExclusiveOr (wordptr X, wordptr Y, wordptr Z);  /* X=(Y+Z)\(Y*Z) */
 void    Set_Complement  (wordptr X, wordptr Y);             /* X = ~Y */
 
 /*      set test functions on whole sets: */
@@ -158,7 +161,7 @@ void    Set_Copy(wordptr X, wordptr Y);                     /* X = Y */
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     12.12.95              */
+/* MODIFIED     16.12.95              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/
