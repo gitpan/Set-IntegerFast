@@ -16,7 +16,7 @@ require Exporter;
 
 @EXPORT_OK = qw();
 
-$VERSION = '2.0';
+$VERSION = '3.0';
 
 use Carp;
 
@@ -82,6 +82,16 @@ sub new
     }
 }
 
+sub Size
+{
+    croak "Usage: Set::IntegerRange::Size(\$set)"
+      if (@_ != 1);
+
+    my($this) = @_;
+
+    return( $this->[1], $this->[2] );
+}
+
 sub Empty
 {
     croak "Usage: Set::IntegerRange::Empty(\$set)"
@@ -100,6 +110,66 @@ sub Fill
     my($this) = @_;
 
     $this->[0]->Fill();
+}
+
+sub Empty_Interval
+{
+    croak "Usage: Set::IntegerRange::Empty_Interval(\$set,\$lower,\$upper)"
+      if (@_ != 3);
+
+    my($this,$lower,$upper) = @_;
+    my($min,$max) = ($this->[1],$this->[2]);
+
+    croak "Set::IntegerRange::Empty_Interval(): lower index out of range"
+      if (($lower < $min) || ($lower > $max));
+
+    croak "Set::IntegerRange::Empty_Interval(): upper index out of range"
+      if (($upper < $min) || ($upper > $max));
+
+    croak "Set::IntegerRange::Empty_Interval(): lower > upper index"
+      if ($lower > $upper);
+
+    $this->[0]->Empty_Interval($lower-$min,$upper-$min);
+}
+
+sub Fill_Interval
+{
+    croak "Usage: Set::IntegerRange::Fill_Interval(\$set,\$lower,\$upper)"
+      if (@_ != 3);
+
+    my($this,$lower,$upper) = @_;
+    my($min,$max) = ($this->[1],$this->[2]);
+
+    croak "Set::IntegerRange::Fill_Interval(): lower index out of range"
+      if (($lower < $min) || ($lower > $max));
+
+    croak "Set::IntegerRange::Fill_Interval(): upper index out of range"
+      if (($upper < $min) || ($upper > $max));
+
+    croak "Set::IntegerRange::Fill_Interval(): lower > upper index"
+      if ($lower > $upper);
+
+    $this->[0]->Fill_Interval($lower-$min,$upper-$min);
+}
+
+sub Flip_Interval
+{
+    croak "Usage: Set::IntegerRange::Flip_Interval(\$set,\$lower,\$upper)"
+      if (@_ != 3);
+
+    my($this,$lower,$upper) = @_;
+    my($min,$max) = ($this->[1],$this->[2]);
+
+    croak "Set::IntegerRange::Flip_Interval(): lower index out of range"
+      if (($lower < $min) || ($lower > $max));
+
+    croak "Set::IntegerRange::Flip_Interval(): upper index out of range"
+      if (($upper < $min) || ($upper > $max));
+
+    croak "Set::IntegerRange::Flip_Interval(): lower > upper index"
+      if ($lower > $upper);
+
+    $this->[0]->Flip_Interval($lower-$min,$upper-$min);
 }
 
 sub Insert
@@ -948,6 +1018,12 @@ is not affected by this)
 
 =item *
 
+C<($lower,$upper) = $set-E<gt>Size();>
+
+returns the lower and upper boundaries that the given set was created with
+
+=item *
+
 C<$set-E<gt>Empty();>
 
 deletes all elements in the set
@@ -957,6 +1033,27 @@ deletes all elements in the set
 C<$set-E<gt>Fill();>
 
 inserts all possible elements into the set
+
+=item *
+
+C<$set-E<gt>Empty_Interval($lower,$upper);>
+
+removes all elements in the interval C<[$lower..$upper]> (B<including>
+both limits) from the set
+
+=item *
+
+C<$set-E<gt>Fill_Interval($lower,$upper);>
+
+inserts all elements in the interval C<[$lower..$upper]> (B<including>
+both limits) into the set
+
+=item *
+
+C<$set-E<gt>Flip_Interval($lower,$upper);>
+
+flips all elements in the interval C<[$lower..$upper]> (B<including>
+both limits) in the set
 
 =item *
 
@@ -1091,6 +1188,8 @@ set
 =item *
 
 B<Hint: method names all in lower case indicate a boolean return value!>
+
+(Except for "C<new()>", of course!)
 
 =back
 
@@ -1649,7 +1748,7 @@ DFA::Kleene(3), Kleene(3), Graph::Kruskal(3).
 
 =head1 VERSION
 
-This man page documents Set::IntegerRange version 2.0.
+This man page documents Set::IntegerRange version 3.0.
 
 =head1 AUTHOR
 

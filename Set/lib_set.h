@@ -13,10 +13,6 @@
 /* INTERFACE                          */
 /**************************************/
 
-/*      define ENABLE_BOUNDS_CHECKING here to do bounds checking! */
-
-#define ENABLE_BOUNDS_CHECKING
-
 /*      automatic self-configuring routine: */
 
 unit    Set_Auto_config(void);                       /* 0 = ok, 1..5 = error */
@@ -33,6 +29,10 @@ void    Set_Destroy(unitptr addr);                          /* free          */
 unitptr Set_Resize (unitptr oldaddr, N_int elements);       /* realloc       */
 void    Set_Empty  (unitptr addr);                          /* X = {}        */
 void    Set_Fill   (unitptr addr);                          /* X = ~{}       */
+
+void    Set_Empty_Interval(unitptr addr, N_int lower, N_int upper);
+void    Set_Fill_Interval (unitptr addr, N_int lower, N_int upper);
+void    Set_Flip_Interval (unitptr addr, N_int lower, N_int upper);
 
 /*      set operations on elements: */
 
@@ -169,7 +169,7 @@ void    Set_Copy        (unitptr X, unitptr Y);             /* X = Y         */
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     20.01.97              */
+/* MODIFIED     01.02.97              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/

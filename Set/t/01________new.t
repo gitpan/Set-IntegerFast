@@ -11,7 +11,7 @@ use Set::IntegerFast;
 #   $set = Set::IntegerFast::new('Set::IntegerFast',$elements);
 # ======================================================================
 
-print "1..83\n";
+print "1..131\n";
 
 $n = 1;
 
@@ -397,6 +397,20 @@ eval { $set = Set::IntegerFast::new($set,19,'main'); };
 if ($@ =~ /Usage: Set::IntegerFast::new\(class,elements\)/)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+
+# test if size is correct:
+
+for ( $i = 1; $i <= 16; $i++ )
+{
+    $k = 2 ** $i;
+    for ( $j = $k-1; $j <= $k+1; $j++ )
+    {
+        $set = Set::IntegerFast->new($j);
+        if ($set->Size() == $j)
+        {print "ok $n\n";} else {print "not ok $n\n";}
+        $n++;
+    }
+}
 
 exit;
 

@@ -1,12 +1,12 @@
 ################################################################
 #
-#  Typemap for package "Set::IntegerFast" version 2.2
+#  Typemap for module "Set::IntegerFast" version 3.0
 #
 #  Copyright (c) 1995, 1996, 1997 by Steffen Beyer. All rights reserved.
 #  This package is free software; you can redistribute it and/or modify
 #  it under the same terms as Perl itself.
 #
-#  Last modified 20-Jan-1997
+#  Last modified 30-Jan-1997
 #
 ################################################################
 

@@ -11,7 +11,7 @@ use Set::IntegerFast;
 
 $prefix = 'Set::IntegerFast';
 
-$bad_idx = 'index out of range';
+$bad_idx = '(?:lower |upper |)index out of range';
 
 $mismatch = 'set size mismatch';
 
@@ -22,28 +22,32 @@ $special  = 1 << 4;
 
 $limit = $numeric;
 
-$method_list{'Resize'}       = 2 + $numeric;
-$method_list{'Empty'}        = 1;
-$method_list{'Fill'}         = 1;
-$method_list{'Insert'}       = 2 + $numeric + $special;
-$method_list{'Delete'}       = 2 + $numeric + $special;
-$method_list{'flip'}         = 2 + $numeric + $special;
-$method_list{'in'}           = 2 + $numeric + $special;
-$method_list{'Norm'}         = 1;
-$method_list{'Min'}          = 1;
-$method_list{'Max'}          = 1;
-$method_list{'Union'}        = 3;
-$method_list{'Intersection'} = 3;
-$method_list{'Difference'}   = 3;
-$method_list{'ExclusiveOr'}  = 3;
-$method_list{'Complement'}   = 2;
-$method_list{'equal'}        = 2;
-$method_list{'inclusion'}    = 2;
-$method_list{'lexorder'}     = 2;
-$method_list{'Compare'}      = 2;
-$method_list{'Copy'}         = 2;
+$method_list{'Size'}           = 1;
+$method_list{'Resize'}         = 2 + $numeric;
+$method_list{'Empty'}          = 1;
+$method_list{'Fill'}           = 1;
+$method_list{'Empty_Interval'} = 3 + $numeric + $special;
+$method_list{'Fill_Interval'}  = 3 + $numeric + $special;
+$method_list{'Flip_Interval'}  = 3 + $numeric + $special;
+$method_list{'Insert'}         = 2 + $numeric + $special;
+$method_list{'Delete'}         = 2 + $numeric + $special;
+$method_list{'flip'}           = 2 + $numeric + $special;
+$method_list{'in'}             = 2 + $numeric + $special;
+$method_list{'Norm'}           = 1;
+$method_list{'Min'}            = 1;
+$method_list{'Max'}            = 1;
+$method_list{'Union'}          = 3;
+$method_list{'Intersection'}   = 3;
+$method_list{'Difference'}     = 3;
+$method_list{'ExclusiveOr'}    = 3;
+$method_list{'Complement'}     = 2;
+$method_list{'equal'}          = 2;
+$method_list{'inclusion'}      = 2;
+$method_list{'lexorder'}       = 2;
+$method_list{'Compare'}        = 2;
+$method_list{'Copy'}           = 2;
 
-print "1..589\n";
+print "1..715\n";
 
 $n = 1;
 

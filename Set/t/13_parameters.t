@@ -11,7 +11,7 @@ use Set::IntegerRange;
 
 $prefix = 'Set::IntegerRange';
 
-$bad_idx = 'index out of range';
+$bad_idx = '(?:lower |upper |)index out of range';
 
 $mismatch = 'set size mismatch';
 
@@ -19,25 +19,29 @@ $numeric  = 1 << 3;
 
 $limit = $numeric;
 
-$method_list{'Empty'}        = 1;
-$method_list{'Fill'}         = 1;
-$method_list{'Insert'}       = 2 + $numeric;
-$method_list{'Delete'}       = 2 + $numeric;
-$method_list{'flip'}         = 2 + $numeric;
-$method_list{'in'}           = 2 + $numeric;
-$method_list{'Norm'}         = 1;
-$method_list{'Min'}          = 1;
-$method_list{'Max'}          = 1;
-$method_list{'Union'}        = 3;
-$method_list{'Intersection'} = 3;
-$method_list{'Difference'}   = 3;
-$method_list{'ExclusiveOr'}  = 3;
-$method_list{'Complement'}   = 2;
-$method_list{'equal'}        = 2;
-$method_list{'inclusion'}    = 2;
-$method_list{'lexorder'}     = 2;
-$method_list{'Compare'}      = 2;
-$method_list{'Copy'}         = 2;
+$method_list{'Size'}           = 1;
+$method_list{'Empty'}          = 1;
+$method_list{'Fill'}           = 1;
+$method_list{'Empty_Interval'} = 3 + $numeric;
+$method_list{'Fill_Interval'}  = 3 + $numeric;
+$method_list{'Flip_Interval'}  = 3 + $numeric;
+$method_list{'Insert'}         = 2 + $numeric;
+$method_list{'Delete'}         = 2 + $numeric;
+$method_list{'flip'}           = 2 + $numeric;
+$method_list{'in'}             = 2 + $numeric;
+$method_list{'Norm'}           = 1;
+$method_list{'Min'}            = 1;
+$method_list{'Max'}            = 1;
+$method_list{'Union'}          = 3;
+$method_list{'Intersection'}   = 3;
+$method_list{'Difference'}     = 3;
+$method_list{'ExclusiveOr'}    = 3;
+$method_list{'Complement'}     = 2;
+$method_list{'equal'}          = 2;
+$method_list{'inclusion'}      = 2;
+$method_list{'lexorder'}       = 2;
+$method_list{'Compare'}        = 2;
+$method_list{'Copy'}           = 2;
 
 $operator_list{'+'}   = 1;
 $operator_list{'|'}   = 1;
@@ -59,7 +63,7 @@ $operator_list{'le'}  = 1;
 $operator_list{'gt'}  = 1;
 $operator_list{'ge'}  = 1;
 
-print "1..729\n";
+print "1..975\n";
 
 $n = 1;
 

@@ -9,12 +9,13 @@ use Set::IntegerRange;
 
 # ======================================================================
 #   $set = Set::IntegerRange::new('Set::IntegerRange',$lower,$upper);
+#   $set->Size();
 #   $set->Norm();
 #   $set->Min();
 #   $set->Max();
 # ======================================================================
 
-print "1..101\n";
+print "1..116\n";
 
 $n = 1;
 
@@ -37,6 +38,10 @@ $n++;
 if ($set->Max() == 0)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+($min,$max) = $set->Size();
+if (($min == 0) && ($max == 0))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 $set = Set::IntegerRange::new('Set::IntegerRange',-1,1);
 if (defined $set)
@@ -55,6 +60,10 @@ $n++;
 if ($set->Max() == 1)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+($min,$max) = $set->Size();
+if (($min == -1) && ($max == 1))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 $set = Set::IntegerRange::new('Set::IntegerRange',-997,499);
 if (defined $set)
@@ -71,6 +80,10 @@ if ($set->Min() == -997)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if ($set->Max() == 499)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+($min,$max) = $set->Size();
+if (($min == -997) && ($max == 499))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -105,6 +118,10 @@ $n++;
 if ($set->Max() == 2)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+($min,$max) = $set->Size();
+if (($min == -2) && ($max == 2))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 # test case #3:
 
@@ -123,6 +140,10 @@ if ($ref->Min() == -3)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if ($ref->Max() == 3)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+($min,$max) = $ref->Size();
+if (($min == -3) && ($max == 3))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -145,6 +166,10 @@ $n++;
 if ($set->Max() == 4)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+($min,$max) = $set->Size();
+if (($min == -4) && ($max == 4))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 # test case #5:
 
@@ -163,6 +188,10 @@ if ($ref->Min() == -5)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if ($ref->Max() == 5)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+($min,$max) = $ref->Size();
+if (($min == -5) && ($max == 5))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -202,6 +231,10 @@ $n++;
 if ($ref->Max() == 4)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+($min,$max) = $ref->Size();
+if (($min == -4) && ($max == 4))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 # test case #6 (pseudo auto-destruction test):
 
@@ -222,6 +255,10 @@ $n++;
 if ($set->Max() == 6)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+($min,$max) = $set->Size();
+if (($min == -6) && ($max == 6))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 # coherence tests:
 
@@ -238,6 +275,10 @@ if ($ref->Min() == -4)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if ($ref->Max() == 4)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+($min,$max) = $ref->Size();
+if (($min == -4) && ($max == 4))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -258,6 +299,10 @@ if ($set->Min() == -7)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if ($set->Max() == 7)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+($min,$max) = $set->Size();
+if (($min == -7) && ($max == 7))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -308,6 +353,10 @@ $n++;
 if ($set->Max() == 12)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+($min,$max) = $set->Size();
+if (($min == -12) && ($max == 12))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 eval { $set = 0; };
 unless ($@)
@@ -332,6 +381,10 @@ if (Set::IntegerRange::Min($set) == -13)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (Set::IntegerRange::Max($set) == 13)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+($min,$max) = Set::IntegerRange::Size($set);
+if (($min == -13) && ($max == 13))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -360,6 +413,10 @@ $n++;
 if ($set->Max() == 14)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+($min,$max) = $set->Size();
+if (($min == -14) && ($max == 14))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 eval { $set = 0; };
 unless ($@)
@@ -385,6 +442,10 @@ if ($set->Min() == -15)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if ($set->Max() == 15)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+($min,$max) = $set->Size();
+if (($min == -15) && ($max == 15))
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 

@@ -13,10 +13,10 @@ use Set::IntegerFast;
 print "1..2\n";
 
 $n = 1;
-if (Set::IntegerFast::Version() eq "2.2")
+if (Set::IntegerFast::Version() eq "3.0")
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
-if ($Set::IntegerFast::VERSION eq "2.2")
+if ($Set::IntegerFast::VERSION eq "3.0")
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 

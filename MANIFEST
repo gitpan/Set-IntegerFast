@@ -7,7 +7,12 @@ MANIFEST
 Makefile.PL
 Math/Makefile.PL
 Math/MatrixBool.pm
+Math/MatrixBool.xs
 Math/MatrixReal.pm
+Math/lib_defs.h
+Math/lib_matr.c
+Math/lib_matr.h
+Math/typemap
 README
 Set/IntegerFast.pm
 Set/IntegerFast.xs
@@ -27,10 +32,12 @@ Set/t/06__inclusion.t
 Set/t/07___lexorder.t
 Set/t/08_____resize.t
 Set/t/09_parameters.t
+Set/t/0A__intervals.t
 Set/t/10____version.t
 Set/t/11________new.t
 Set/t/12_overloaded.t
 Set/t/13_parameters.t
+Set/t/14__intervals.t
 Set/t/20____version.t
 Set/t/30____version.t
 Set/t/40____version.t

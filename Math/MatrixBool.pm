@@ -9,14 +9,17 @@ use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION);
 
 require Exporter;
+require DynaLoader;
 
-@ISA = qw(Exporter);
+@ISA = qw(Exporter DynaLoader);
 
 @EXPORT = qw();
 
 @EXPORT_OK = qw();
 
-$VERSION = '1.0';
+$VERSION = '2.0';
+
+bootstrap Math::MatrixBool $VERSION;
 
 use Carp;
 
@@ -80,6 +83,77 @@ sub new
         return($this);
     }
     else { return(undef); }
+}
+
+sub new_from_string
+{
+    croak "Usage: \$new_matrix = Math::MatrixBool->new_from_string(\$string);"
+      if (@_ != 2);
+
+    my $proto  = shift;
+    my $class  = ref($proto) || $proto || '';
+    my $string = shift;
+    my($line,$values);
+    my($rows,$cols);
+    my($row,$col);
+    my($warn);
+    my($this);
+
+    croak "Math::MatrixBool::new_from_string(): error in first parameter (class name or reference)"
+      if ($class eq '');
+
+    $warn = 0;
+    $rows = 0;
+    $cols = 0;
+    $values = [ ];
+    while ($string =~ m!^\s* \[ \s+ ( (?: (?: 0|1 ) \s+ )+ ) \] \s*? \n !x)
+    {
+        $line = $1;
+        $string = $';
+        $values->[$rows] = [ ];
+        @{$values->[$rows]} = split(' ', $line);
+        $col = @{$values->[$rows]};
+        if ($col != $cols)
+        {
+            unless ($cols == 0) { $warn = 1; }
+            if ($col > $cols) { $cols = $col; }
+        }
+        $rows++;
+    }
+    if ($string !~ m!^\s*$!)
+    {
+        croak "Math::MatrixBool::new_from_string(): syntax error in input string";
+    }
+    if ($rows == 0)
+    {
+        croak "Math::MatrixBool::new_from_string(): empty input string";
+    }
+    if ($warn)
+    {
+        warn "Math::MatrixBool::new_from_string(): missing elements will be set to zero!\n";
+    }
+    $this = Math::MatrixBool::new($class,$rows,$cols);
+    for ( $row = 0; $row < $rows; $row++ )
+    {
+        for ( $col = 0; $col < @{$values->[$row]}; $col++ )
+        {
+            if ($values->[$row][$col] != 0)
+            {
+                $this->[0]->Insert( $row * $cols + $col );
+            }
+        }
+    }
+    return($this);
+}
+
+sub Dim  #  Returns dimensions of a matrix
+{
+    croak "Usage: (\$rows,\$columns) = Math::MatrixBool::Dim(\$matrix);"
+      if (@_ != 1);
+ 
+    my($matrix) = @_;
+ 
+    return( $matrix->[1], $matrix->[2] );
 }
 
 sub Zero
@@ -278,25 +352,14 @@ sub Multiplication
     my($matrix1,$matrix2) = @_;
     my($rows1,$cols1) = ($matrix1->[1],$matrix1->[2]);
     my($rows2,$cols2) = ($matrix2->[1],$matrix2->[2]);
-    my($i,$j,$k,$sum);
     my($temp);
 
     if ($cols1 == $rows2)
     {
-        for ( $i = 0; $i < $rows1; $i++ )
-        {
-            for ( $j = 0; $j < $cols2; $j++ )
-            {
-                $sum = 0;
-                for ( $k = 0; $k < $cols1; $k++ )
-                {
-                    $sum ^= ( $matrix1->[0]->in( $i * $cols1 + $k ) &
-                              $matrix2->[0]->in( $k * $cols2 + $j ) );
-                }
-                if ($sum) { $temp->[0]->Insert( $i * $cols2 + $j ); }
-                else      { $temp->[0]->Delete( $i * $cols2 + $j ); }
-            }
-        }
+        $temp = $matrix1->new($rows1,$cols2);
+        Multiply($temp->[0],$rows1,$cols2,
+              $matrix1->[0],$rows1,$cols1,
+              $matrix2->[0],$rows2,$cols2);
     }
     else
     {
@@ -313,27 +376,14 @@ sub Kleene
     my($matrix1,$matrix2) = @_;
     my($rows1,$cols1) = ($matrix1->[1],$matrix1->[2]);
     my($rows2,$cols2) = ($matrix2->[1],$matrix2->[2]);
-    my($i,$j,$k,$n);
 
     croak "Math::MatrixBool::Kleene(): matrix is not quadratic"
       if ($rows2 != $cols2);
 
     if (($rows1 == $rows2) && ($cols1 == $cols2))
     {
-        $n = $rows2;
         $matrix1->Copy($matrix2);
-        for ( $k = 0; $k < $n; $k++ )
-        {
-            for ( $i = 0; $i < $n; $i++ )
-            {
-                for ( $j = 0; $j < $n; $j++ )
-                {
-                    if ( $matrix1->[0]->in(     $i * $n + $k ) &
-                         $matrix1->[0]->in(     $k * $n + $j ) )
-                    {    $matrix1->[0]->Insert( $i * $n + $j ); }
-                }
-            }
-        }
+        Closure($matrix1->[0],$rows1,$cols1);
     }
     else
     {
@@ -1049,6 +1099,112 @@ still another way of calling the matrix object constructor method
 
 =item *
 
+C<$new_matrix = Math::MatrixBool-E<gt>>C<new_from_string($string);>
+
+This method allows you to read in a matrix from a string (for
+instance, from the keyboard, from a file or from your code).
+
+The syntax is simple: each row must start with "[" and end with "]"
+and a "\n" and contain one or more numbers, all separated by spaces
+or tabs. Additional spaces or tabs can be added at will, but no
+comments. Numbers are either "0" or "1".
+
+Examples:
+
+    $string = "[ 1 0 0 ]\n[ 1 1 0 ]\n[ 1 1 1 ]\n";
+    $matrix = Math::MatrixBool->new_from_string($string);
+    print "$matrix";
+
+By the way, this prints
+
+    [ 1 0 0 ]
+    [ 1 1 0 ]
+    [ 1 1 1 ]
+
+But you can also do this in a much more comfortable way using the
+shell-like "here-document" syntax:
+
+    $matrix = Math::MatrixBool->new_from_string(<<'MATRIX');
+    [  1  0  0  0  0  0  1  ]
+    [  0  1  0  0  0  0  0  ]
+    [  0  0  1  0  0  0  0  ]
+    [  0  0  0  1  0  0  0  ]
+    [  0  0  0  0  1  0  0  ]
+    [  0  0  0  0  0  1  0  ]
+    [  1  0  0  0  0  0  1  ]
+    MATRIX
+
+You can even use variables in the matrix:
+
+    $c1  =  $A1 * $x1 - $b1 >= 0  ?"1":"0";
+    $c1  =  $A2 * $x2 - $b2 >= 0  ?"1":"0";
+    $c1  =  $A3 * $x3 - $b3 >= 0  ?"1":"0";
+
+    $matrix = Math::MatrixBool->new_from_string(<<"MATRIX");
+
+        [   1    0    0   ]
+        [   0    1    0   ]
+        [  $c1  $c2  $c3  ]
+
+    MATRIX
+
+(Remember that you may use spaces and tabs to format the matrix to
+your taste)
+
+Note that this method uses exactly the same representation for a
+matrix as the "stringify" operator "": this means that you can convert
+any matrix into a string with C<$string = "$matrix";> and read it back
+in later (for instance from a file!).
+
+If the string you supply (or someone else supplies) does not obey
+the syntax mentioned above, an exception is raised, which can be
+caught by "eval" as follows:
+
+    print "Please enter your matrix: ";
+    $string = <STDIN>;
+    eval { $matrix = Math::MatrixBool->new_from_string($string); };
+    if ($@)
+    {
+        print "$@";
+        # ...
+        # (error handling)
+    }
+    else
+    {
+        # continue...
+    }
+
+or as follows:
+
+    eval { $matrix = Math::MatrixBool->new_from_string(<<"MATRIX"); };
+    [   1    0    0   ]
+    [   0    1    0   ]
+    [  $c1  $c2  $c3  ]
+    MATRIX
+    if ($@)
+    # ...
+
+Possible error messages are:
+
+    Math::MatrixBool::new_from_string(): syntax error in input string
+    Math::MatrixBool::new_from_string(): empty input string
+
+If the input string has rows with varying numbers of columns,
+the following warning will be printed to STDERR:
+
+    Math::MatrixBool::new_from_string(): missing elements will be set to zero!
+
+If everything is okay, the method returns an object reference to the
+(newly allocated) matrix containing the elements you specified.
+
+=item *
+
+C<($rows,$columns) = $matrix-E<gt>Dim();>
+
+returns the dimensions (= number of rows and columns) of the given matrix
+
+=item *
+
 C<$matrix-E<gt>Zero();>
 
 deletes all elements in the matrix
@@ -1242,6 +1398,8 @@ to the new matrix
 =item *
 
 B<Hint: method names all in lower case indicate a boolean return value!>
+
+(Except for "C<new()>" and "C<new_from_string()>", of course!)
 
 =back
 
@@ -1683,7 +1841,7 @@ Set::IntegerRange(3), Set::IntegerFast(3).
 
 =head1 VERSION
 
-This man page documents Math::MatrixBool version 1.0.
+This man page documents Math::MatrixBool version 2.0.
 
 =head1 AUTHOR
 

@@ -119,8 +119,25 @@ Version()
 PPCODE:
 {
     EXTEND(sp,1);
-    PUSHs(sv_2mortal(newSVpv("2.2",0)));
+    PUSHs(sv_2mortal(newSVpv("3.0",0)));
 }
+
+
+N_int
+Size(reference)
+Set_Object	reference
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+        RETVAL = *(address-3);
+    else
+        croak("Set::IntegerFast::Size(): not a 'Set::IntegerFast' object reference");
+}
+OUTPUT:
+RETVAL
 
 
 MODULE = Set::IntegerFast		PACKAGE = Set::IntegerFast		PREFIX = Set_
@@ -248,6 +265,81 @@ CODE:
     }
     else
         croak("Set::IntegerFast::Fill(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Empty_Interval(reference,lower,upper)
+Set_Object	reference
+N_int	lower
+N_int	upper
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        if (lower >= *(address-3))
+            croak("Set::IntegerFast::Empty_Interval(): lower index out of range");
+        if (upper >= *(address-3))
+            croak("Set::IntegerFast::Empty_Interval(): upper index out of range");
+        if (lower > upper)
+            croak("Set::IntegerFast::Empty_Interval(): lower > upper index");
+        Set_Empty_Interval(address,lower,upper);
+    }
+    else
+        croak("Set::IntegerFast::Empty_Interval(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Fill_Interval(reference,lower,upper)
+Set_Object	reference
+N_int	lower
+N_int	upper
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        if (lower >= *(address-3))
+            croak("Set::IntegerFast::Fill_Interval(): lower index out of range");
+        if (upper >= *(address-3))
+            croak("Set::IntegerFast::Fill_Interval(): upper index out of range");
+        if (lower > upper)
+            croak("Set::IntegerFast::Fill_Interval(): lower > upper index");
+        Set_Fill_Interval(address,lower,upper);
+    }
+    else
+        croak("Set::IntegerFast::Fill_Interval(): not a 'Set::IntegerFast' object reference");
+}
+
+
+void
+Set_Flip_Interval(reference,lower,upper)
+Set_Object	reference
+N_int	lower
+N_int	upper
+CODE:
+{
+    Set_Handle  handle;
+    Set_Address address;
+
+    if ( SET_OBJECT_CHECK(reference,handle,address,Class_Name) )
+    {
+        if (lower >= *(address-3))
+            croak("Set::IntegerFast::Flip_Interval(): lower index out of range");
+        if (upper >= *(address-3))
+            croak("Set::IntegerFast::Flip_Interval(): upper index out of range");
+        if (lower > upper)
+            croak("Set::IntegerFast::Flip_Interval(): lower > upper index");
+        Set_Flip_Interval(address,lower,upper);
+    }
+    else
+        croak("Set::IntegerFast::Flip_Interval(): not a 'Set::IntegerFast' object reference");
 }
 
 

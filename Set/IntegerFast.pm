@@ -17,7 +17,7 @@ require DynaLoader;
 
 @EXPORT_OK = qw();
 
-$VERSION = '2.2';
+$VERSION = '3.0';
 
 bootstrap Set::IntegerFast $VERSION;
 
@@ -88,19 +88,19 @@ C<$set = Set::IntegerFast-E<gt>new($elements);>
 
 =item *
 
-C<$set1 = Set::IntegerFast-E<gt>new($elem1); $set2 = $set1-E<gt>new($elem2);>
+C<$set2 = $set1-E<gt>new($elements);>
 
 (alternate way of calling the set object constructor)
 
-(leaves the first set object intact)
+(leaves the set "C<$set1>" untouched)
 
 =item *
 
-C<$set = Set::IntegerFast-E<gt>new($elem1); $set = $set-E<gt>new($elem2);>
+C<$set = $set-E<gt>new($elements);>
 
 (alternate way of calling the set object constructor)
 
-(destroys the first set object, however)
+(destroys the set previously stored in "C<$set>", however)
 
 =item *
 
@@ -112,6 +112,13 @@ destroys the set and releases the memory occupied by it
 do it automatically for you when the last reference to your set is
 deleted, for instance through assigning a different value to the Perl
 variable containing the reference to your set, like in "C<$set = 0;>")
+
+=item *
+
+C<$size = $set-E<gt>Size();>
+
+returns the size (= maximum number of elements it can contain) the given
+set was created with (or "C<Resize()>"d to)
 
 =item *
 
@@ -130,6 +137,27 @@ deletes all elements in the set
 C<$set-E<gt>Fill();>
 
 inserts all possible elements into the set
+
+=item *
+
+C<$set-E<gt>Empty_Interval($lower,$upper);>
+
+removes all elements in the interval C<[$lower..$upper]> (B<including>
+both limits) from the set
+
+=item *
+
+C<$set-E<gt>Fill_Interval($lower,$upper);>
+
+inserts all elements in the interval C<[$lower..$upper]> (B<including>
+both limits) into the set
+
+=item *
+
+C<$set-E<gt>Flip_Interval($lower,$upper);>
+
+flips all elements in the interval C<[$lower..$upper]> (B<including>
+both limits) in the set
 
 =item *
 
@@ -249,6 +277,8 @@ copies set2 to set1
 =item *
 
 B<Hint: method names all in lower case indicate a boolean return value!>
+
+(Except for "C<new()>", of course!)
 
 =back
 
@@ -391,6 +421,18 @@ C<$set = new Set::IntegerFast($upperbound - $lowerbound + 1);>
 
 =item
 
+C<$set-E<gt>Empty_Interval($lowerindex-$lowerbound, $upperindex-$lowerbound);>
+
+=item
+
+C<$set-E<gt>Fill_Interval($lowerindex-$lowerbound, $upperindex-$lowerbound);>
+
+=item
+
+C<$set-E<gt>Flip_Interval($lowerindex-$lowerbound, $upperindex-$lowerbound);>
+
+=item
+
 C<$set-E<gt>Insert($index - $lowerbound);>
 
 =item
@@ -429,6 +471,18 @@ C<$set = new Set::IntegerFast($elements);>
 
 =item
 
+C<$set-E<gt>Empty_Interval($lowerindex, $upperindex);>
+
+=item
+
+C<$set-E<gt>Fill_Interval($lowerindex, $upperindex);>
+
+=item
+
+C<$set-E<gt>Flip_Interval($lowerindex, $upperindex);>
+
+=item
+
 C<$set-E<gt>Insert($index);>
 
 =item
@@ -459,9 +513,9 @@ It's as simple as that!
 
 Note that if you don't want to go through the hassle ;-) of handling this
 yourself, you can use the "Set::IntegerRange" module in this package which
-provides exactly the same methods as this module (except for "Resize()",
-however), which stores the lower and upper limits along with a given set
-and provides the necessary translation as shown above.
+provides exactly the same methods as the "Set::IntegerFast" module (except
+for "Resize()"), which stores the lower and upper limits along with any
+given set and provides the necessary translation as shown above.
 
 Please refer to L<Set::IntegerRange(3)> for more details!
 
@@ -487,7 +541,7 @@ from other packages.
 
 =item *
 
-C<$set = new Set::IntegerFast($elements);>
+C<$set = Set::IntegerFast-E<gt>new($elements);>
 
 This is the set object constructor method.
 
@@ -561,6 +615,13 @@ of the reference has also been deleted:
     $set = 0;    # set object is NOT destroyed yet!
     ...
     $ref = 0;    # NOW the set object gets killed!
+
+=item *
+
+C<$size = $set-E<gt>Size();>
+
+This method returns the size (= maximum number of elements it can contain)
+the given set was created with (or "C<Resize()>"d to).
 
 =item *
 
@@ -655,7 +716,7 @@ same as "$set->DESTROY();".
 Beware that this leaves you with an invalid reference in the variable
 "$set"!
 
-(See also the documentation of the "DESTROY" method above for more
+(See also the documentation of the "DESTROY()" method above for more
 details)
 
 =item *
@@ -678,6 +739,45 @@ the empty set).
 
 The method "$set->in($i)" returns true (1) for every element
 after invoking this method for the given set.
+
+=item *
+
+C<$set-E<gt>Empty_Interval($lower,$upper);>
+
+This method removes all elements in the interval C<[$lower..$upper]>
+(B<including> both limits) from the set.
+
+"C<$lower>" and "C<$upper>" may have the same value; this is the same
+as deleting a single element with "C<Delete()>".
+
+Note that C<$set-E<gt>Empty_Interval(0,$set-E<gt>Size()-1);> is the same
+as C<$set-E<gt>Empty();>.
+
+=item *
+
+C<$set-E<gt>Fill_Interval($lower,$upper);>
+
+This method inserts all elements in the interval C<[$lower..$upper]>
+(B<including> both limits) into the set.
+
+"C<$lower>" and "C<$upper>" may have the same value; this is the same
+as inserting a single element with "C<Insert()>".
+
+Note that C<$set-E<gt>Fill_Interval(0,$set-E<gt>Size()-1);> is the same
+as C<$set-E<gt>Fill();>.
+
+=item *
+
+C<$set-E<gt>Flip_Interval($lower,$upper);>
+
+This method flips all elements in the interval C<[$lower..$upper]>
+(B<including> both limits) in the set.
+
+"C<$lower>" and "C<$upper>" may have the same value; this is the same
+as flipping a single element with "C<flip()>".
+
+Note that C<$set-E<gt>Flip_Interval(0,$set-E<gt>Size()-1);> is the same
+as C<$set-E<gt>Complement($set);>.
 
 =item *
 
@@ -770,10 +870,10 @@ C<$set-E<gt>Norm();>
 This method computes the "norm" of the given set, i.e., the number
 of elements the given set contains.
 
-When applied to the empty set (see also the method "Empty" above),
+When applied to the empty set (see also the method "Empty()" above),
 this method returns zero.
 
-When applied to the "all" set (see also the method "Fill" above),
+When applied to the "all" set (see also the method "Fill()" above),
 this method returns the maximum number "$elements" of elements the
 set can hold (which the set was initially created with).
 
@@ -784,7 +884,7 @@ C<$set-E<gt>Min();>
 This method computes the minimum of (i.e., the smallest element
 contained in) the given set.
 
-Note that the minimum of an empty set (see also the method "Empty"
+Note that the minimum of an empty set (see also the method "Empty()"
 above) doesn't exist. Therefore, plus infinity (represented by the
 numeric constant "LONG_MAX" on your system) is returned as the minimum
 of an empty set.
@@ -807,7 +907,7 @@ C<$set-E<gt>Max();>
 This method computes the maximum of (i.e., the greatest element
 contained in) the given set.
 
-Note that the maximum of an empty set (see also the method "Empty"
+Note that the maximum of an empty set (see also the method "Empty()"
 above) doesn't exist. Therefore, minus infinity (represented by the
 numeric constant "LONG_MIN" on your system) is returned as the maximum
 of an empty set.
@@ -914,7 +1014,7 @@ The information that initially was stored in the resulting set
 "$set1" gets overwritten, i.e., lost.
 
 In-place substitution is possible, i.e., the resulting set
-may be the same as the argument.
+and the argument set may be identical.
 
 Note that the argument set and the resulting set must have
 the same size (i.e., they must have been created with the
@@ -1008,7 +1108,7 @@ to make the comparison possible between the initial and the final
 set after some computation.
 
 Note that the "carbon copy" set "$set1" is NOT created by the
-"Copy" method, it rather must have been created beforehand,
+"Copy()" method, it rather must have been created beforehand,
 and the two sets must have the same size (i.e., they must
 have been created with the same maximum number "$elements" of
 elements), or you will get an error message.
@@ -1046,11 +1146,12 @@ This number is a pointer that the C part of the "Set::IntegerFast" module
 uses to access a given set. The anonymous scalar is considered to be an
 object (of class "Set::IntegerFast") by Perl.
 
-What the object constructor method "new" actually does is to call the
-C part of the module (function "Set_Create") to create a new set object.
+What the object constructor method "new()" actually does is to call the
+C part of the module (function "Set_Create()") to create a new set object.
 It then creates the anonymous scalar Perl variable and stores the pointer
-returned by "Set_Create" in it. This scalar is then blessed into an object
-of class "Set::IntegerFast". Finally "new" returns a reference to that scalar.
+returned by "Set_Create()" in it. This scalar is then blessed into an object
+of class "Set::IntegerFast". Finally "new()" returns a reference to that
+scalar.
 
 Beware that the C part of this module uses a B<fake pointer> which points
 to a convenient location B<inside> the set object (B<not> to the beginning
@@ -1074,7 +1175,7 @@ you must do the following:
 
 =item -
 
-Change directory to the "F<Set-IntegerFast-2.2/>" distribution directory
+Change directory to the "F<Set-IntegerFast-3.2/>" distribution directory
 
 =item -
 
@@ -1116,9 +1217,13 @@ of "b" here)
 
     new                  n/b         n/b         n/b          1)
     DESTROY              1           1           1
+    Size                 1           1           1
     Resize               n/b         1           n+b/2b       2)
     Empty                n/b         n/b         n/b
     Fill                 n/b         n/b         n/b
+    Empty_Interval       n/b         1           <<P0>>
+    Fill_Interval        n/b         1           <<P0>>
+    Flip_Interval        n/b         1           <<P0>>
     Insert               1           1           1
     Delete               1           1           1
     flip                 1           1           1
@@ -1188,8 +1293,21 @@ complexities!) according to the formula:
 p(i) is the probability of value i and E[X] the average outcome of X)
 
 (The result is more or less close to n for Norm, vaguely in the range
-n/2b to n/b for Min and Max, and close to 1 for equal, lexorder, Compare
-and inclusion)
+n/2b to n/b for Min and Max, close to 1 for equal, lexorder, Compare
+and inclusion, and almost constant n/3b for Empty_Interval,
+Fill_Interval and Flip_Interval.)
+
+    <<P0>> :
+
+    sub average_case     # methods "Empty_Interval", "Fill_Interval",
+    {                    # "Flip_Interval"
+        my($n,$b) = @_;
+        my($s,$t);
+
+        $s = $n * ( $n * ($n + 3 * $b) + $b * (3 - $b) ) / (6 * $b);
+        $t = $n * ($n + 1) / 2;
+        return($s / $t);
+    }
 
     <<P1>> :
 
@@ -1434,7 +1552,7 @@ perlxstut(1), perlguts(1).
 
 =head1 VERSION
 
-This man page documents Set::IntegerFast version 2.2.
+This man page documents Set::IntegerFast version 3.0.
 
 =head1 AUTHOR
 

@@ -9,7 +9,7 @@ use Set::IntegerFast;
 #   $set->Resize($elements);
 # ======================================================================
 
-print "1..50\n";
+print "1..57\n";
 
 $n = 1;
 
@@ -75,6 +75,9 @@ $old = ${$set};
 if (${$set} == $old)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+if ($set->Size() == 65536)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 $set->Resize(4090);
 if (defined $set)
@@ -89,6 +92,9 @@ $n++;
 if (${$set} == $old)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+if ($set->Size() == 4090)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 $set->Resize(4096);
 if (defined $set)
@@ -101,6 +107,9 @@ if (${$set} != 0)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} == $old)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($set->Size() == 4096)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -121,6 +130,9 @@ $old = ${$set};
 if (${$set} == $old)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+if ($set->Size() == &binomial(49,6))
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 $limit = 65536;
 $count = 24;
@@ -136,6 +148,9 @@ if (${$set} != 0)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$set} == $old)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($set->Size() == $limit)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 
@@ -178,6 +193,9 @@ $n++;
 if (${$set} != $old)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
+if ($set->Size() == $limit * 2)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
 
 if ($set->Norm() == $count)
 {print "ok $n\n";} else {print "not ok $n\n";}
@@ -191,6 +209,9 @@ if (ref($inv) eq 'Set::IntegerFast')
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 if (${$inv} != 0)
+{print "ok $n\n";} else {print "not ok $n\n";}
+$n++;
+if ($inv->Size() == $limit * 2)
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 

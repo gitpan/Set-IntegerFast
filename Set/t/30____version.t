@@ -12,7 +12,7 @@ use Math::MatrixReal;
 print "1..1\n";
 
 $n = 1;
-if ($Math::MatrixReal::VERSION eq "1.0")
+if ($Math::MatrixReal::VERSION eq "1.1")
 {print "ok $n\n";} else {print "not ok $n\n";}
 $n++;
 

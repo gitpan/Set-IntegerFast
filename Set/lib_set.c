@@ -34,6 +34,10 @@ unitptr Set_Resize (unitptr oldaddr, N_int elements);       (* realloc       *)
 void    Set_Empty  (unitptr addr);                          (* X = {}        *)
 void    Set_Fill   (unitptr addr);                          (* X = ~{}       *)
 
+void    Set_Empty_Interval(unitptr addr, N_int lower, N_int upper);
+void    Set_Fill_Interval (unitptr addr, N_int lower, N_int upper);
+void    Set_Flip_Interval (unitptr addr, N_int lower, N_int upper);
+
 (*      set operations on elements: *)
 
 void    Set_Insert (unitptr addr, N_int index);             (* X = X + {x}   *)
@@ -259,7 +263,7 @@ unit Set_Mask(N_int elements)                 /* calc set mask (unused bits) */
     unit mask;
 
     mask = elements AND MODMASK;
-    if (mask) mask = (unit) ((LSB << mask) - 1); else mask = (unit) (-1L);
+    if (mask) mask = (LSB << mask) - 1; else mask = (unit) -1L;
     return(mask);
 }
 
@@ -283,12 +287,125 @@ void Set_Fill(unitptr addr)                               /* X = ~{} set all */
 
     size = *(addr-2);
     mask = *(addr-1);
-    fill = (unit) (-1L);
+    fill = (unit) -1L;
     if (size > 0)
     {
         while (size-- > 0) *addr++ = fill;
         *(--addr) &= mask;
     }
+}
+
+void Set_Empty_Interval(unitptr addr, N_int lower, N_int upper)
+{                                                  /* X = X \ [lower..upper] */
+    unitptr loaddr;
+    unitptr hiaddr;
+    unit    lobase;
+    unit    hibase;
+    unit    lomask;
+    unit    himask;
+    unit    size;
+
+    lobase = lower >> LOGBITS;
+    hibase = upper >> LOGBITS;
+    size = hibase - lobase;
+    loaddr = addr + lobase;
+    hiaddr = addr + hibase;
+
+    lomask = NOT ( (LSB << (lower AND MODMASK)) - 1 );
+    himask = (upper AND MODMASK) + 1;
+    if (himask < BITS) himask = (LSB << himask) - 1; else himask = (unit) -1L;
+
+    if (size == 0)
+    {
+        *loaddr &= NOT (lomask AND himask);
+    }
+    else if (size > 0)
+    {
+        *loaddr++ &= NOT lomask;
+        while (--size > 0)
+        {
+            *loaddr++ = 0;
+        }
+        *hiaddr &= NOT himask;
+    }
+}
+
+void Set_Fill_Interval(unitptr addr, N_int lower, N_int upper)
+{                                                  /* X = X + [lower..upper] */
+    unitptr loaddr;
+    unitptr hiaddr;
+    unit    lobase;
+    unit    hibase;
+    unit    lomask;
+    unit    himask;
+    unit    size;
+    unit    fill;
+
+    fill = (unit) -1L;
+
+    lobase = lower >> LOGBITS;
+    hibase = upper >> LOGBITS;
+    size = hibase - lobase;
+    loaddr = addr + lobase;
+    hiaddr = addr + hibase;
+
+    lomask = NOT ( (LSB << (lower AND MODMASK)) - 1 );
+    himask = (upper AND MODMASK) + 1;
+    if (himask < BITS) himask = (LSB << himask) - 1; else himask = (unit) -1L;
+
+    if (size == 0)
+    {
+        *loaddr |= (lomask AND himask);
+    }
+    else if (size > 0)
+    {
+        *loaddr++ |= lomask;
+        while (--size > 0)
+        {
+            *loaddr++ = fill;
+        }
+        *hiaddr |= himask;
+    }
+    *(addr + (*(addr-2) - 1))  &=  *(addr-1);
+}
+
+void Set_Flip_Interval(unitptr addr, N_int lower, N_int upper)
+{                                                  /* X = X ^ [lower..upper] */
+    unitptr loaddr;
+    unitptr hiaddr;
+    unit    lobase;
+    unit    hibase;
+    unit    lomask;
+    unit    himask;
+    unit    size;
+    unit    fill;
+
+    fill = (unit) -1L;
+
+    lobase = lower >> LOGBITS;
+    hibase = upper >> LOGBITS;
+    size = hibase - lobase;
+    loaddr = addr + lobase;
+    hiaddr = addr + hibase;
+
+    lomask = NOT ( (LSB << (lower AND MODMASK)) - 1 );
+    himask = (upper AND MODMASK) + 1;
+    if (himask < BITS) himask = (LSB << himask) - 1; else himask = (unit) -1L;
+
+    if (size == 0)
+    {
+        *loaddr ^= (lomask AND himask);
+    }
+    else if (size > 0)
+    {
+        *loaddr++ ^= lomask;
+        while (--size > 0)
+        {
+            *loaddr++ ^= fill;
+        }
+        *hiaddr ^= himask;
+    }
+    *(addr + (*(addr-2) - 1))  &=  *(addr-1);
 }
 
 unitptr Set_Create(N_int elements)                          /* malloc        */
@@ -674,7 +791,7 @@ void Set_Copy(unitptr X, unitptr Y)                         /* X = Y         */
 /**************************************/
 /* CREATED      01.11.93              */
 /**************************************/
-/* MODIFIED     20.01.97              */
+/* MODIFIED     01.02.97              */
 /**************************************/
 /* COPYRIGHT    Steffen Beyer         */
 /**************************************/
